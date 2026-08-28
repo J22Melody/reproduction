@@ -1,0 +1,88 @@
+{
+  "paper_id": "8b224ecbd42da766efba45d17b34b3a1255c2345",
+  "assignment": {
+    "kind": "direct_user_request",
+    "source": {
+      "path": "/Users/zifanjiang/Downloads/8b224ecbd42da766efba45d17b34b3a1255c2345.pdf",
+      "sha256": "0afdb6457dbfe7300d6a2c883d06676527bd39ecb658e59c17f48514db9d147c"
+    },
+    "normalized": {
+      "title": "Temporal-to-Spatial Transmutation for Enhancing Arabic Sign Language Recognition via ResNet",
+      "year": 2025,
+      "venue": "7th International Conference on Pattern Analysis and Intelligent Systems (PAIS)",
+      "pdf_url": null,
+      "code_repos": [],
+      "what_to_reproduce": "Table 3",
+      "metric_ids": [],
+      "metric_records": [],
+      "datasets": [
+        {
+          "id": null,
+          "name": "ArabSign",
+          "available": null,
+          "license": null,
+          "urls": [],
+          "comments": ""
+        }
+      ],
+      "copied_scores": null,
+      "compute_requirements": "All experiments were conducted on a system equipped with an AMD Ryzen 3 4300GE processor running Windows 10 Professional, with 16 GB of RAM. The model was trained on the CPU, without utilizing the available AMD RX580 GPU (8GB VRAM)",
+      "includes_human_evaluation": null,
+      "potential_ethical_concerns": null,
+      "comments": "paper does not mention what the labels are: data used are sentences, authors mention samples of 10 frames (presumably cut out of the sentences) but nothing about gloss alignment.",
+      "flag_reason": ""
+    },
+    "transcription": {
+      "origin": "REPRO-SIGN assignment portal record for this paper, pasted into the reproduction session by the assignee on 2026-08-28.",
+      "fidelity": "Manual transcription of the rendered web form, not a machine export. No candidate export file was available, so assignment.kind remains direct_user_request and no assignment.record is claimed. Replace this block with ingest_candidate.py output if Team S supplies the export.",
+      "unreadable_fields": [
+        "peer_reviewed",
+        "potential_ethical_concerns",
+        "main_experiment_has_ranking",
+        "copied_scores",
+        "includes_human_evaluation",
+        "status",
+        "confirmation"
+      ],
+      "unreadable_fields_note": "Radio-button fields rendered without their selected values in the transcription and are recorded as null rather than guessed. The form still offered Finalize / Flag / Reject actions, so whether this record reached confirmation 'confirmed' and status 'final' is unverified.",
+      "additional_fields": {
+        "area_of_slp": ["Recognition"],
+        "sub_area_of_slp": ["Isolated signing videos"],
+        "textual_conclusion": "In this paper we have demonstrated the effectiveness of the ResNet architecture against LSTM for Arabic Sign Language recognition. The proposed model achieved higher accuracy while requiring fewer parameters. Its training is significantly faster, and exhibits globally a greater stability",
+        "metric_names": ["Accuracy", "Precision", "Recall", "F1"],
+        "code_repos_confirmed_absent": true
+      }
+    }
+  },
+  "paper": {
+    "title": "Temporal-to-Spatial Transmutation for Enhancing Arabic Sign Language Recognition via ResNet",
+    "citation": "Ben-Abderrahmane, H.; Oulad-Naoui, S.; Cherif, A.; Chagha, A. Temporal-to-Spatial Transmutation for Enhancing Arabic Sign Language Recognition via ResNet. In 2025 7th International Conference on Pattern Analysis and Intelligent Systems (PAIS), IEEE, 2025. doi:10.1109/PAIS66004.2025.11126496.",
+    "url": "https://doi.org/10.1109/PAIS66004.2025.11126496",
+    "ieee_record": "https://ieeexplore.ieee.org/document/11126496",
+    "pdf_sha256": "0afdb6457dbfe7300d6a2c883d06676527bd39ecb658e59c17f48514db9d147c",
+    "accessed_at": "2026-08-28",
+    "access_note": "PDF supplied by the assignee; the file carries an IEEE Xplore watermark recording download by Northeastern University on 2026-08-01. IEEE Xplore requires a subscription, so the PDF is not committed."
+  },
+  "sources": [
+    {
+      "source_id": "paper-pdf",
+      "kind": "paper",
+      "url": "https://doi.org/10.1109/PAIS66004.2025.11126496",
+      "revision_or_sha256": "0afdb6457dbfe7300d6a2c883d06676527bd39ecb658e59c17f48514db9d147c",
+      "role": "Target values and disclosed protocol"
+    }
+  ],
+  "status": {
+    "pipeline": null,
+    "numerical_agreement": null,
+    "preference_level": null,
+    "blocker": null
+  },
+  "datasets": [],
+  "metric_definitions": [],
+  "experiments": [],
+  "targets": [],
+  "runs": [],
+  "artifacts": [],
+  "gates": []
+}
