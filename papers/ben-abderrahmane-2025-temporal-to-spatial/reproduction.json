@@ -46,10 +46,19 @@
       ],
       "unreadable_fields_note": "Radio-button fields rendered without their selected values in the transcription and are recorded as null rather than guessed. The form still offered Finalize / Flag / Reject actions, so whether this record reached confirmation 'confirmed' and status 'final' is unverified.",
       "additional_fields": {
-        "area_of_slp": ["Recognition"],
-        "sub_area_of_slp": ["Isolated signing videos"],
+        "area_of_slp": [
+          "Recognition"
+        ],
+        "sub_area_of_slp": [
+          "Isolated signing videos"
+        ],
         "textual_conclusion": "In this paper we have demonstrated the effectiveness of the ResNet architecture against LSTM for Arabic Sign Language recognition. The proposed model achieved higher accuracy while requiring fewer parameters. Its training is significantly faster, and exhibits globally a greater stability",
-        "metric_names": ["Accuracy", "Precision", "Recall", "F1"],
+        "metric_names": [
+          "Accuracy",
+          "Precision",
+          "Recall",
+          "F1"
+        ],
         "code_repos_confirmed_absent": true
       }
     }
@@ -99,11 +108,231 @@
     "preference_level": null,
     "blocker": null
   },
-  "datasets": [],
-  "metric_definitions": [],
-  "experiments": [],
-  "targets": [],
+  "datasets": [
+    {
+      "dataset_id": "arabsign",
+      "name": "ArabSign",
+      "version_or_subset": "Full release: 9,335 samples of 50 ArSL sentences by 6 signers, at least 30 repetitions per sentence per signer. Colour modality only; the target paper runs MediaPipe pose over frames rather than using the provided Kinect skeleton stream.",
+      "license_or_permission": "unverified: the ArabSign paper names https://github.com/Hamzah-Luqman/ArabSign as the data and code location, but its terms have not been retrieved and no permission basis is established. See gate arabsign-access.",
+      "cloud_processing_allowed": false,
+      "modal_volume": "datasets",
+      "modal_path": "arabsign",
+      "splits": [
+        {
+          "name": "no official split; the target paper states none and ArabSign publishes none",
+          "sample_count": 9335,
+          "files": []
+        }
+      ],
+      "known_mismatch": "Table II of the target paper labels 200,000 as the total frame count. ArabSign states this figure is for all sentences performed by one signer, which reconciles with 9,335/6 samples per signer at 130.3 frames each. The row is copied from reference [19] with the same label."
+    }
+  ],
+  "metric_definitions": [
+    {
+      "metric_id": "accuracy",
+      "name": "Accuracy",
+      "direction": "higher",
+      "implementation": "Not named. The paper states only that the model is implemented with the Keras API on a TensorFlow backend (§IV).",
+      "version": "unspecified by paper",
+      "aggregation": "Overall correct-sample fraction over the held-out split.",
+      "unit_or_scale": "fraction in [0, 1] as printed in Table III"
+    },
+    {
+      "metric_id": "precision-weighted",
+      "name": "Precision",
+      "direction": "higher",
+      "implementation": "Not named. Inferred to be a support-weighted average over the 50 sentence classes; see aggregation.",
+      "version": "unspecified by paper",
+      "aggregation": "Inferred support-weighted average over the 50 classes. Table III reports Recall exactly equal to Accuracy in both columns (0.9777 and 0.8875). Support-weighted recall is identically equal to accuracy, whereas macro and micro averaging are not, so the column was very likely produced by weighted averaging. The paper does not state this.",
+      "unit_or_scale": "fraction in [0, 1] as printed in Table III"
+    },
+    {
+      "metric_id": "recall-weighted",
+      "name": "Recall",
+      "direction": "higher",
+      "implementation": "Not named. Inferred to be a support-weighted average over the 50 sentence classes; see aggregation.",
+      "version": "unspecified by paper",
+      "aggregation": "Inferred support-weighted average over the 50 classes, on the same evidence as precision-weighted. Under this reading the metric is numerically identical to accuracy, which is exactly what Table III shows in both columns.",
+      "unit_or_scale": "fraction in [0, 1] as printed in Table III"
+    },
+    {
+      "metric_id": "f1-weighted",
+      "name": "F1-Score",
+      "direction": "higher",
+      "implementation": "Not named. Inferred to be a support-weighted average over the 50 sentence classes; see aggregation.",
+      "version": "unspecified by paper",
+      "aggregation": "Inferred support-weighted average over the 50 classes, on the same evidence as precision-weighted. Table III's F1 sits just below accuracy, consistent with weighted averaging.",
+      "unit_or_scale": "fraction in [0, 1] as printed in Table III"
+    }
+  ],
+  "experiments": [
+    {
+      "experiment_id": "table-iii-resnet",
+      "system": "Proposed temporal-to-spatial residual CNN. MediaPipe pose keypoints for 10 frames per video, 33 landmarks with x and y, giving input shape (10, 33, 2); Conv2D with 32 filters; three residual blocks (32; 64 stride 2; 128 stride 2); flatten; Dense 128; Dense 50. 755,346 parameters. Adam, categorical cross-entropy, batch size 32, 100 epochs; learning rate 0.001 is not stated in the target paper and is carried from reference [19], which §IV says supplied the same training parameters.",
+      "dataset_id": "arabsign",
+      "checkpoint_rule": "None published. The paper describes a fixed 100-epoch run and reports final-model metrics; no best-checkpoint selection or early stopping is mentioned, and Figure 3(a) shows testing loss rising slightly after about 40 epochs without any action taken.",
+      "paper_evidence": "Table III, ResNet column; architecture in §III and Table I; training settings and hardware in §IV."
+    },
+    {
+      "experiment_id": "table-iii-lstm",
+      "system": "Prior LSTM system from reference [19]: two stacked LSTM layers of 512 units, then flatten and two dense layers, output 50; 3,835,954 parameters per Table III, matching the \"3.8 million parameters\" reported in [19] §4. Trained in [19] on an Intel Xeon Silver 4112 with an NVIDIA RTX 4060 GPU, unlike this paper's CPU-only runs.",
+      "dataset_id": "arabsign",
+      "checkpoint_rule": "Not applicable. The values are carried from [19] rather than produced by this reproduction.",
+      "paper_evidence": "Table III, LSTM column; [19] §4 architecture and §5 result of 88.75% test accuracy."
+    }
+  ],
+  "targets": [
+    {
+      "target_id": "table3-resnet-accuracy",
+      "paper_location": "Table III (Model Comparison), ResNet column, Accuracy row",
+      "system": "Proposed temporal-to-spatial residual CNN",
+      "experiment_id": "table-iii-resnet",
+      "split": "unspecified by paper; 80/20 inherited from [19]",
+      "metric_id": "accuracy",
+      "original_value": 0.9777,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "table3-resnet-precision",
+      "paper_location": "Table III (Model Comparison), ResNet column, Precision row",
+      "system": "Proposed temporal-to-spatial residual CNN",
+      "experiment_id": "table-iii-resnet",
+      "split": "unspecified by paper; 80/20 inherited from [19]",
+      "metric_id": "precision-weighted",
+      "original_value": 0.979,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "table3-resnet-recall",
+      "paper_location": "Table III (Model Comparison), ResNet column, Recall row",
+      "system": "Proposed temporal-to-spatial residual CNN",
+      "experiment_id": "table-iii-resnet",
+      "split": "unspecified by paper; 80/20 inherited from [19]",
+      "metric_id": "recall-weighted",
+      "original_value": 0.9777,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "table3-resnet-f1",
+      "paper_location": "Table III (Model Comparison), ResNet column, F1-Score row",
+      "system": "Proposed temporal-to-spatial residual CNN",
+      "experiment_id": "table-iii-resnet",
+      "split": "unspecified by paper; 80/20 inherited from [19]",
+      "metric_id": "f1-weighted",
+      "original_value": 0.9773,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "table3-lstm-accuracy",
+      "paper_location": "Table III (Model Comparison), LSTM column, Accuracy row",
+      "system": "Prior LSTM system from reference [19]",
+      "experiment_id": "table-iii-lstm",
+      "split": "80/20 per [19] §5; no seed or file lists published",
+      "metric_id": "accuracy",
+      "original_value": 0.8875,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Carried from the authors' prior paper [19] rather than produced by this paper, so it is not reproduced under this assignment."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Reference [19] §5 and its conclusion both report a test accuracy of 88.75%, exactly Table III's 0.8875.",
+          "Reference [19]'s abstract states \"surpasses 88.5%\", which is the figure the target paper's §II cites, so both values trace to [19]."
+        ]
+      }
+    },
+    {
+      "target_id": "table3-lstm-precision",
+      "paper_location": "Table III (Model Comparison), LSTM column, Precision row",
+      "system": "Prior LSTM system from reference [19]",
+      "experiment_id": "table-iii-lstm",
+      "split": "80/20 per [19] §5; no seed or file lists published",
+      "metric_id": "precision-weighted",
+      "original_value": 0.893,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Part of the prior [19] LSTM comparison column rather than a contribution of this paper, so it is not reproduced under this assignment. Unlike the accuracy row, this exact value is not published in [19]."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table III's LSTM column reports the reference [19] system, whose accuracy row matches [19] exactly.",
+          "Reference [19] reports accuracy only; it publishes no precision, recall, or F1, so this value is unsourced and its origin cannot be recovered from either paper."
+        ]
+      }
+    },
+    {
+      "target_id": "table3-lstm-recall",
+      "paper_location": "Table III (Model Comparison), LSTM column, Recall row",
+      "system": "Prior LSTM system from reference [19]",
+      "experiment_id": "table-iii-lstm",
+      "split": "80/20 per [19] §5; no seed or file lists published",
+      "metric_id": "recall-weighted",
+      "original_value": 0.8875,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Part of the prior [19] LSTM comparison column rather than a contribution of this paper, so it is not reproduced under this assignment. Its value equals the copied accuracy, consistent with support-weighted averaging."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table III's LSTM column reports the reference [19] system, whose accuracy row matches [19] exactly.",
+          "Reference [19] reports accuracy only; it publishes no precision, recall, or F1, so this value is unsourced and its origin cannot be recovered from either paper."
+        ]
+      }
+    },
+    {
+      "target_id": "table3-lstm-f1",
+      "paper_location": "Table III (Model Comparison), LSTM column, F1-Score row",
+      "system": "Prior LSTM system from reference [19]",
+      "experiment_id": "table-iii-lstm",
+      "split": "80/20 per [19] §5; no seed or file lists published",
+      "metric_id": "f1-weighted",
+      "original_value": 0.8867,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Part of the prior [19] LSTM comparison column rather than a contribution of this paper, so it is not reproduced under this assignment. Unlike the accuracy row, this exact value is not published in [19]."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table III's LSTM column reports the reference [19] system, whose accuracy row matches [19] exactly.",
+          "Reference [19] reports accuracy only; it publishes no precision, recall, or F1, so this value is unsourced and its origin cannot be recovered from either paper."
+        ]
+      }
+    }
+  ],
   "runs": [],
   "artifacts": [],
-  "gates": []
+  "gates": [
+    {
+      "gate_id": "arabsign-access",
+      "type": "data",
+      "status": "open",
+      "reason": "ArabSign has not been retrieved and no permission basis is established. The ArabSign paper names https://github.com/Hamzah-Luqman/ArabSign as the data and code location, but its licence, redistribution terms, and project-cloud processing rights have not been read. The corpus is video of six identifiable signers, so the consent and reporting basis for cloud processing also needs checking; an ethics gate will be opened separately if those terms turn out to be unclear rather than merely unread.",
+      "evidence": [
+        "ArabSign paper (arXiv:2210.03951) §III: recorded with Kinect V2, colour 1920x1080 at 30 fps, six male signers aged 21-30, all right-handed, recorded in an unconstrained room with a white background.",
+        "ArabSign paper abstract: \"The data and code are available at https://github.com/Hamzah-Luqman/ArabSign\".",
+        "No path 'arabsign' has been checked on the shared Modal Volume 'datasets'."
+      ],
+      "required_action": "Retrieve the ArabSign terms, determine the permission basis for study use and project-cloud processing, and confirm or populate 'arabsign' on the shared 'datasets' Volume with verified counts and checksums. Dataset acquisition and identity questions are coordinated with Team S."
+    }
+  ]
 }
