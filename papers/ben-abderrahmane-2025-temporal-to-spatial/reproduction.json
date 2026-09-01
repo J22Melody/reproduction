@@ -105,7 +105,7 @@
   "status": {
     "pipeline": null,
     "numerical_agreement": null,
-    "preference_level": null,
+    "preference_level": 3,
     "blocker": null
   },
   "datasets": [
@@ -326,13 +326,15 @@
       "gate_id": "arabsign-access",
       "type": "data",
       "status": "open",
-      "reason": "ArabSign has not been retrieved and no permission basis is established. The ArabSign paper names https://github.com/Hamzah-Luqman/ArabSign as the data and code location, but its licence, redistribution terms, and project-cloud processing rights have not been read. The corpus is video of six identifiable signers, so the consent and reporting basis for cloud processing also needs checking; an ethics gate will be opened separately if those terms turn out to be unclear rather than merely unread.",
+      "reason": "ArabSign is not publicly downloadable and is absent from the shared Modal Volume 'datasets'. The official dataset page distributes all three modalities only on request by email to the dataset author at KFUPM, publishes no licence or click-through terms, and the GitHub repository carries no licence file. No permission basis for study use or project-cloud processing therefore exists yet. The corpus is video of six identifiable signers, so consent and reporting basis must be settled in the same request; a separate ethics gate will be opened only if the terms turn out to be unclear rather than merely unobtained.",
       "evidence": [
-        "ArabSign paper (arXiv:2210.03951) §III: recorded with Kinect V2, colour 1920x1080 at 30 fps, six male signers aged 21-30, all right-handed, recorded in an unconstrained room with a white background.",
-        "ArabSign paper abstract: \"The data and code are available at https://github.com/Hamzah-Luqman/ArabSign\".",
-        "No path 'arabsign' has been checked on the shared Modal Volume 'datasets'."
+        "https://hamzah-luqman.github.io/ArabSign/ download section: \"To download any of these modalities, please send an email to Hamzah Luqman (hluqman@kfupm.edu.sa)\"; accessed 2026-08-28.",
+        "GitHub API for Hamzah-Luqman/ArabSign at commit 8f6e127a054052228027d6da98005f991d300a7b: \"license\": null; repository is 9 MB and holds only the benchmark code archive and project page, not the data.",
+        "check_modal_dataset.sh arabsign on 2026-08-28: 'Requested dataset arabsign is absent from Modal Volume datasets' (path /arabsign/ does not exist).",
+        "Volume 'datasets' listing on 2026-08-28 contains arasl-database-grayscale, a different Arabic dataset, and no ArabSign.",
+        "ArabSign paper (arXiv:2210.03951) §III: six identifiable male signers aged 21-30 recorded on colour video."
       ],
-      "required_action": "Retrieve the ArabSign terms, determine the permission basis for study use and project-cloud processing, and confirm or populate 'arabsign' on the shared 'datasets' Volume with verified counts and checksums. Dataset acquisition and identity questions are coordinated with Team S."
+      "required_action": "Team S requests ArabSign access from the dataset author at KFUPM and establishes the permission basis for study use, project-cloud processing, and reporting. This reproduction must not email the author directly: author contact is a gated action and data-access requests are coordinated by Team S. Once granted, populate 'arabsign' on the shared 'datasets' Volume with verified counts and checksums."
     }
   ]
 }
