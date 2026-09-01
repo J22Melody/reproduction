@@ -70,6 +70,27 @@
       "url": "https://doi.org/10.1109/PAIS66004.2025.11126496",
       "revision_or_sha256": "0afdb6457dbfe7300d6a2c883d06676527bd39ecb658e59c17f48514db9d147c",
       "role": "Target values and disclosed protocol"
+    },
+    {
+      "source_id": "prior-lstm-paper",
+      "kind": "related_method",
+      "url": "https://doi.org/10.2991/978-94-6463-496-9_24",
+      "revision_or_sha256": "c0d48f5e3c2a1ef2c560a7dd2bf36a41f6be7c9207648904720944b1a101a95f",
+      "role": "Reference [19], the authors' prior LSTM system. Open access CC BY-NC 4.0 PDF at https://www.atlantis-press.com/article/126002698.pdf, accessed 2026-08-28. Supplies the preprocessing, split, and optimizer details the target paper omits but says it inherited, the LSTM architecture behind Table III's comparison column, and the origin of Table III's LSTM accuracy."
+    },
+    {
+      "source_id": "arabsign-paper",
+      "kind": "dataset",
+      "url": "https://arxiv.org/abs/2210.03951",
+      "revision_or_sha256": "7be6d45db9a17116201957bae100940d95b0f7fe36cf587b59b6aaa5ea94ccc8",
+      "role": "Authoritative ArabSign description (also published as doi:10.1109/FG57933.2023.10042720), accessed 2026-08-28. Establishes sample composition, recording modalities, frame statistics, and the absence of an official train/test split."
+    },
+    {
+      "source_id": "arabsign-data",
+      "kind": "dataset",
+      "url": "https://github.com/Hamzah-Luqman/ArabSign",
+      "revision_or_sha256": "not yet pinned; no commit selected before the data gate",
+      "role": "Access path named by the ArabSign paper for data and code. Not yet inspected, downloaded, or licence-checked."
     }
   ],
   "status": {
