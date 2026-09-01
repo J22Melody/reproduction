@@ -4,17 +4,17 @@
 
 **Citation:** Ben-Abderrahmane, H.; Oulad-Naoui, S.; Cherif, A.; Chagha, A. Temporal-to-Spatial Transmutation for Enhancing Arabic Sign Language Recognition via ResNet. In *2025 7th International Conference on Pattern Analysis and Intelligent Systems (PAIS)*, IEEE, 2025. doi:10.1109/PAIS66004.2025.11126496.
 
-**Paper:** https://doi.org/10.1109/PAIS66004.2025.11126496 · **Code/artifacts:** the portal reviewer confirmed no code repositories are available; an independent source search is still pending and that confirmation is not treated as proof
+**Paper:** https://doi.org/10.1109/PAIS66004.2025.11126496 · **Code/artifacts:** none. No code exists for this paper after the independent search recorded under Source provenance.
 
-**Preference level:** not yet determined
+**Preference level:** 3
 
-**Status:** not yet determined — assignment established only
+**Status:** not yet determined — target contract and source search complete; the ArabSign data gate is open
 
 **Attempt date:** 2026-08-28 (branched from `4894d7e`)
 
 ## Scope and target contract
 
-**Not yet built.** `reproduction.json.targets` is empty; the target contract is the next stage.
+Eight targets are recorded in `reproduction.json.targets`, one per requested Table III number.
 
 The assignment was made through the REPRO-SIGN portal. No machine-readable candidate export was available, so the portal record was transcribed by hand into `assignment.normalized` and is marked as a transcription rather than an export. `assignment.kind` therefore remains `direct_user_request`, and no `assignment.record` is claimed. Radio-button fields — including `copied_scores`, `potential_ethical_concerns`, `includes_human_evaluation`, and the record's own `confirmation`/`status` — did not render their values and are recorded as `null` rather than guessed. The form still offered Finalize / Flag / Reject, so whether this record is `confirmed` and `final` is unverified.
 
@@ -37,6 +37,43 @@ Documented inconsistencies in the target paper, none of which change the Table I
 
 The portal sub-area "Isolated signing videos" is consistent with this reading: ArabSign is a continuous corpus benchmarked with WER and BLEU over gloss sequences, but both author papers repurpose it as flat 50-way sentence classification.
 
+### Extracted protocol contract
+
+Every element the reproduction must satisfy, with its evidence and whether the paper determines it. `[19]` marks a value recovered from the prior paper under §IV's statement that the same training parameters were adopted.
+
+| Element | Value | Determined? |
+| --- | --- | --- |
+| Framework | Keras API on a TensorFlow backend (§IV) | versions not given |
+| Hardware | AMD Ryzen 3 4300GE, 16 GB RAM, **CPU only**, RX580 GPU deliberately unused (§IV) | yes |
+| Keypoint extractor | MediaPipe pose model, 33 landmarks, x and y only (§III) | model variant/version not given |
+| Sample construction | 10 frames per video → input `(10, 33, 2)`; one sample per sentence video (§III, [19]) | yes, but frame **selection rule** is not given |
+| Labels | 50 sentence classes, one per ArabSign sentence (§III) | yes |
+| Split | 80/20 [19]; ArabSign publishes none | ratio only; no seed, signer policy, or file lists |
+| Optimizer | Adam, learning rate 0.001 [19] (§IV cites [19] for parameters) | yes |
+| Loss | Categorical cross-entropy (§IV) | yes |
+| Batch size / epochs | 32 / 100 (§IV) | yes |
+| Padding / strides | `same`; blocks 2 and 3 use stride 2 — confirmed by the shape chain (10,33)→(5,17)→(3,9) | yes, by arithmetic |
+| Initialisation | not stated | **no** |
+| Seed | not stated in either paper | **no** |
+| Augmentation | none mentioned | implicitly none |
+| Checkpoint rule | none; fixed 100 epochs, final-model metrics reported | yes, by absence |
+| Inference | 3.2729 s per video on an Intel i3-5005U, of which 2.8091 s preprocessing and 0.4639 s prediction (§IV) | reported, not a requirement |
+| Metric implementation | not named; weighted averaging inferred (see `metric_definitions`) | **no** |
+
+**Table I does not describe a self-consistent network.** Its own rows sum to 689,490 parameters, but it states — and Table III repeats — a total of 755,346, leaving 65,856 unaccounted for. Checking each row against plain 3×3 convolutions with bias:
+
+| Row | Stated | Matches |
+| --- | ---: | --- |
+| Conv2D, 32 filters | 608 | exactly one 3×3 conv, 2→32 channels ✓ |
+| Residual Block 1 → (10,33,32) | 18,496 | exactly two 3×3 convs, 32→32 ✓ |
+| Residual Block 2 → (5,17,64) | 73,856 | exactly two convs **64→64**; the declared 32-channel input requires a 32→64 conv, which would give 55,424 ✗ |
+| Residual Block 3 → (3,9,128) | 147,584 | exactly **one** conv 128→128; the declared 64-channel input requires 64→128 + 128→128, which would give 221,440 ✗ |
+| Dense 128, Dense 50 | 442,496, 6,450 | exact for a 3,456-wide flatten ✓ |
+
+So blocks 2 and 3 were counted as though every convolution ran at the block's output width, contradicting their own declared input shapes. No batch-normalisation or projection-shortcut parameters appear anywhere, and the 65,856 shortfall does not decompose cleanly into them. Figure 2 additionally labels the third block's output `(3,8,128)`, while Table I says `(3,9,128)`; the stated flatten width of 3,456 = 3×9×128 confirms Table I and makes Figure 2 wrong.
+
+The consequence for this reproduction: the residual blocks' internal structure — where channels expand, whether shortcuts are projected, whether normalisation layers exist — is not recoverable from the paper. A documented reconstruction will be required and will not reproduce 755,346 parameters exactly.
+
 ## Source provenance
 
 | Artifact | Canonical source | Pinned revision / SHA-256 | Role |
@@ -45,12 +82,24 @@ The portal sub-area "Isolated signing videos" is consistent with this reading: A
 | Prior LSTM paper [19] | https://doi.org/10.2991/978-94-6463-496-9_24 | `c0d48f5e3c2a1ef2c560a7dd2bf36a41f6be7c9207648904720944b1a101a95f` | Inherited preprocessing, 80/20 split, optimizer settings, LSTM architecture, and origin of Table III's copied LSTM accuracy |
 | ArabSign dataset paper | https://arxiv.org/abs/2210.03951 | `7be6d45db9a17116201957bae100940d95b0f7fe36cf587b59b6aaa5ea94ccc8` | Authoritative dataset composition, modalities, frame statistics, absence of an official split |
 | ArabSign data/code | https://github.com/Hamzah-Luqman/ArabSign | not yet pinned | Access path named by the dataset paper; not yet inspected |
-| Published code for this paper | not yet searched | — | — |
-| Weights/configs/supplements | not yet searched | — | — |
+| Published code for this paper | none found | — | Searched 2026-08-28; see the checklist below |
+| Weights/configs/supplements | none found | — | No supplementary material published by either venue |
 
 The target paper's PDF was supplied by the assignee and carries an IEEE Xplore watermark recording download by Northeastern University on 2026-08-01. IEEE Xplore requires a subscription; the PDF is not committed to this repository. Reference [19] is open access under CC BY-NC 4.0 at https://www.atlantis-press.com/article/126002698.pdf and the ArabSign paper is on arXiv; both were retrieved on 2026-08-28 and are likewise referenced by hash rather than committed.
 
-The independent source search required before selecting a preference level has not been run. The portal reviewer confirmed no code repositories are available, which is a lead rather than proof.
+**Independent source search, completed 2026-08-28. No code exists for this paper, so preference level 3 applies.** The portal reviewer's "no code repositories available" was treated as a lead and checked independently:
+
+| Location checked | Result |
+| --- | --- |
+| Target paper, all six pages including footnotes and acknowledgements | No code or data availability statement, no repository URL, no artifact badge |
+| Reference [19], all eleven pages | No code statement; only a DGRSDT/PRFU funding footnote |
+| IEEE Xplore record 11126496 and Atlantis Press landing page 126002698 | No supplementary material or code link |
+| Web search: exact title plus "code"/"github" | No author repository; only unrelated third-party ArSL projects |
+| Web search: author names with ArabSign, LSTM, keypoints, Zenodo, OSF, GitLab | No deposits found |
+| GitHub repository search: `arabsign`, `ben-abderrahmane`, `oulad-naoui`, `temporal-to-spatial sign language` | Only `Hamzah-Luqman/ArabSign` (the dataset) and unrelated student projects; zero author-owned repositories |
+| GitHub user search: `oulad-naoui`, `benabderrahmane` | No account matching any author of this paper |
+
+Neither the paper's own artifacts nor any archival host provides an executable path, so the reproduction will be a clean-room implementation from the paper plus reference [19]. Authors have not been contacted; that remains a gated action available only after an independent attempt.
 
 ## Results
 
@@ -81,9 +130,11 @@ Not yet applicable — no entry points exist.
 
 | Dataset | Version/subset/splits | Source and access date | License/permission and cloud-use basis | Path in Volume `datasets` | Counts / manifest / checksum | Deviations |
 | --- | --- | --- | --- | --- | --- | --- |
-| ArabSign | Full release; no official train/test split exists | Paper read 2026-08-28; data not yet retrieved from https://github.com/Hamzah-Luqman/ArabSign | unverified | not yet checked | 9,335 samples claimed by both papers; not yet verified | none yet |
+| ArabSign | Full release; no official train/test split exists | Paper read 2026-08-28; data **not obtained** — distributed only on email request to the author | **None established.** No licence on the project page or the GitHub repository | `arabsign` — **absent** from Volume `datasets` as of 2026-08-28 | 9,335 samples claimed by both papers; unverified | none |
 
-**No data gate has been run.** Availability, licence, cloud-processing basis, expected counts, and presence under the shared `datasets` Volume are all unverified. The table above records only what the ArabSign paper states.
+**The data gate is open and blocks implementation.** ArabSign is not publicly downloadable: the official page states *"To download any of these modalities, please send an email to Hamzah Luqman (hluqman@kfupm.edu.sa)"*. There is no licence file on `Hamzah-Luqman/ArabSign` (GitHub API reports `"license": null` at commit `8f6e127`) and no click-through terms on the project page, so no permission basis for study use or project-cloud processing exists yet. `check_modal_dataset.sh arabsign` confirms the path is absent from the shared Volume.
+
+This is gate `arabsign-access`, and it is **not yet assessed to a conclusion**: the facts above establish that no public download and no licence exist, but the assignee reports that colleagues have located a copy, whose provenance and terms have not yet been examined. The data gate will be worked through as its own stage. Author contact for data access is Team S's responsibility, not this reproduction's. The Volume also holds `arasl-database-grayscale`, a different Arabic dataset, which is **not** a substitute and has not been used.
 
 From the ArabSign paper (Luqman, FG 2023 / arXiv:2210.03951), relevant to the eventual gate:
 
@@ -96,7 +147,9 @@ From the ArabSign paper (Luqman, FG 2023 / arXiv:2210.03951), relevant to the ev
 
 ## Environment and patches
 
-Not yet applicable. No container, dependencies, or patches defined.
+**No patches.** Preference level 3 applies because no code exists for this paper, so there is no upstream source to patch. Nothing has been built yet: no container, image digest, or dependency lock exists.
+
+What the papers state about the environment, for the eventual container: the model is implemented with "the Keras API with a TensorFlow backend" and keypoints come from the MediaPipe pose model, with no version given for any of the three. The target paper's runs are CPU-only on an AMD Ryzen 3 4300GE under Windows 10 with 16 GB RAM, explicitly not using the available RX580 GPU; reference [19] instead used an Intel Xeon Silver 4112 under Ubuntu 22.04 with 64 GB RAM and an NVIDIA RTX 4060. No CUDA version is relevant to the target configuration. Reference [19] stored extracted keypoints as compressed `.npy` arrays of shape 10×66.
 
 ## Execution evidence
 
