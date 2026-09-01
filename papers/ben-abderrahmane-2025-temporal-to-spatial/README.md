@@ -20,22 +20,37 @@ The assignment was made through the REPRO-SIGN portal. No machine-readable candi
 
 The portal states **What to Reproduce: "Table 3"**, with metrics Accuracy, Precision, Recall, and F1. Those are exactly the rows of the paper's TABLE III (Model Comparison), which is read here as the requested table. Its two columns are the proposed ResNet system (Accuracy 0.9777, Precision 0.9790, Recall 0.9777, F1 0.9773) and an LSTM comparison (0.8875, 0.8930, 0.8875, 0.8867).
 
-Two discrepancies must be settled while building the ledger:
+The target paper omits several protocol details but states in §IV that it "adopted the same training parameters as our previous work[19]". Reference [19] (Oulad-Naoui et al., ICEIS 2024, open access) and the ArabSign dataset paper were therefore retrieved and read; both are recorded in `reproduction.json.sources`. They resolve most of the open questions.
 
-- **Headline accuracy conflict.** The abstract states the model "achieves 91.3% of accuracy", while Table III reports 0.9777 and §IV describes accuracy stabilising "near 97%". The value 91.3% appears nowhere else in the paper. Under the Table III scope it is not a target, but it is recorded here as a documented internal inconsistency.
-- **LSTM column provenance.** Table III's LSTM accuracy is 0.8875, while §II cites the authors' earlier LSTM work [19] as achieving 88.5%. Whether that column is a copied baseline or a re-run is unresolved, and the portal's `copied_scores` value was not readable.
+**Table III's LSTM column is a copied baseline.** [19] §5 and its conclusion both report a test accuracy of 88.75%, which is exactly Table III's LSTM accuracy of 0.8875. The apparent conflict with §II's citation of "88.5%" dissolves: [19]'s abstract says "surpasses 88.5%" while its body says 88.75%, so both figures trace to [19]. The LSTM column is the prior paper's system rather than a contribution of this paper, so its rows are planned as `not_produced` with reason `copied_baseline`. Note that [19] publishes accuracy only — Table III's LSTM precision (0.8930), recall (0.8875), and F1 (0.8867) appear nowhere in it and are unsourced.
 
-**Open protocol question carried from the portal reviewer:** *"paper does not mention what the labels are: data used are sentences, authors mention samples of 10 frames (presumably cut out of the sentences) but nothing about gloss alignment."* ArabSign contains 9,335 samples of 50 continuous sentences (average length 3.1, ~130 frames per sentence), yet the model input is `(10, 33, 2)` — 10 frames — with a 50-way output. How a 10-frame window inherits a sentence label is not stated, and different readings give materially different experiments. Note also that the portal sub-area is "Isolated signing videos" while ArabSign is a continuous corpus. This is expected to become a target/protocol gate before any implementation work.
+**The label question is resolved.** The portal reviewer noted that the paper never defines its labels, and read the 10-frame samples as windows cut out of sentences. [19] states otherwise: "The mission of the first stage is to convert the input video into a sequence of ten frames", retaining "10×66 numpy vectors corresponding to ten frames per video". Each whole sentence video is therefore downsampled to 10 frames and labelled with which of the 50 sentences it is, giving one sample per video and 9,335 samples. No gloss alignment is required. The target paper's phrase "10 consecutive frames" (§III) contradicts the prior work it says it inherited and is treated as loose wording.
+
+**What remains genuinely unspecified** is how the 10 frames are selected from a video of 39–312 frames. Neither paper states it, and [19] lists the question as future work: "it would be interesting to precisely evaluate the impact of the framing approach on the subsequent stages." A documented sampling choice will be required and recorded under Guesses and deviations.
+
+Documented inconsistencies in the target paper, none of which change the Table III targets:
+
+- **Headline accuracy.** The abstract states the model "achieves 91.3% of accuracy", while Table III reports 0.9777 and §IV describes accuracy stabilising "near 97%". The value 91.3% appears nowhere else. §IV's claim of "nearly 10% of accuracy improvement" reconciles with Table III (0.9777 − 0.8875 = 0.0902) and not with 91.3%.
+- **LSTM training time.** Table III reports 3 h; §IV prose says "eight hours for the LSTM model".
+- **Training-time comparison is not like-for-like.** [19] ran on an Intel Xeon Silver 4112 with an NVIDIA RTX 4060 GPU, whereas this paper ran CPU-only on an AMD Ryzen 3 4300GE. Table III's "3 h versus 30 mn" therefore compares different hardware, not architectures alone.
+- **Table II frame count.** Table II is copied from [19] and labels 200,000 as the total frame count. ArabSign states this figure is "for all sentences performed by one signer"; the label is wrong in both author papers. See Data provenance and permissions.
+
+The portal sub-area "Isolated signing videos" is consistent with this reading: ArabSign is a continuous corpus benchmarked with WER and BLEU over gloss sequences, but both author papers repurpose it as flat 50-way sentence classification.
 
 ## Source provenance
 
 | Artifact | Canonical source | Pinned revision / SHA-256 | Role |
 | --- | --- | --- | --- |
 | Paper PDF | https://doi.org/10.1109/PAIS66004.2025.11126496 | `0afdb6457dbfe7300d6a2c883d06676527bd39ecb658e59c17f48514db9d147c` | Target values and disclosed protocol |
-| Published code | not yet searched | — | — |
+| Prior LSTM paper [19] | https://doi.org/10.2991/978-94-6463-496-9_24 | `c0d48f5e3c2a1ef2c560a7dd2bf36a41f6be7c9207648904720944b1a101a95f` | Inherited preprocessing, 80/20 split, optimizer settings, LSTM architecture, and origin of Table III's copied LSTM accuracy |
+| ArabSign dataset paper | https://arxiv.org/abs/2210.03951 | `7be6d45db9a17116201957bae100940d95b0f7fe36cf587b59b6aaa5ea94ccc8` | Authoritative dataset composition, modalities, frame statistics, absence of an official split |
+| ArabSign data/code | https://github.com/Hamzah-Luqman/ArabSign | not yet pinned | Access path named by the dataset paper; not yet inspected |
+| Published code for this paper | not yet searched | — | — |
 | Weights/configs/supplements | not yet searched | — | — |
 
-The PDF was supplied by the assignee and carries an IEEE Xplore watermark recording download by Northeastern University on 2026-08-01. IEEE Xplore requires a subscription; the PDF is not committed to this repository.
+The target paper's PDF was supplied by the assignee and carries an IEEE Xplore watermark recording download by Northeastern University on 2026-08-01. IEEE Xplore requires a subscription; the PDF is not committed to this repository. Reference [19] is open access under CC BY-NC 4.0 at https://www.atlantis-press.com/article/126002698.pdf and the ArabSign paper is on arXiv; both were retrieved on 2026-08-28 and are likewise referenced by hash rather than committed.
+
+The independent source search required before selecting a preference level has not been run. The portal reviewer confirmed no code repositories are available, which is a lead rather than proof.
 
 ## Results
 
@@ -47,7 +62,20 @@ Not yet applicable — no entry points exist.
 
 ## Data provenance and permissions
 
-The paper evaluates on the ArabSign dataset (Luqman, *ArabSign: A Multi-modality Dataset and Benchmark for Continuous Arabic Sign Language Recognition*, FG 2023). No data gate has been run; availability, license, cloud-processing basis, and presence under the shared `datasets` Volume are all unverified.
+| Dataset | Version/subset/splits | Source and access date | License/permission and cloud-use basis | Path in Volume `datasets` | Counts / manifest / checksum | Deviations |
+| --- | --- | --- | --- | --- | --- | --- |
+| ArabSign | Full release; no official train/test split exists | Paper read 2026-08-28; data not yet retrieved from https://github.com/Hamzah-Luqman/ArabSign | unverified | not yet checked | 9,335 samples claimed by both papers; not yet verified | none yet |
+
+**No data gate has been run.** Availability, licence, cloud-processing basis, expected counts, and presence under the shared `datasets` Volume are all unverified. The table above records only what the ArabSign paper states.
+
+From the ArabSign paper (Luqman, FG 2023 / arXiv:2210.03951), relevant to the eventual gate:
+
+- 9,335 samples representing 50 sentences, performed by 6 signers, each sentence repeated at least 30 times per signer.
+- Recorded with Kinect V2 in three simultaneous modalities: colour 1920×1080 at 30 fps, depth 512×424, and skeleton joint points. The target paper uses MediaPipe pose on frames, so it consumes the colour modality rather than the provided skeleton data.
+- Video duration ranges from 1.3 s to 10.4 s; average sentence length 3.1 signs; vocabulary 95 signs across 155 signs in total.
+- "This resulted in around 200,000 frames for all sentences performed by **one signer**, with an average of 130.3 frames per sentence." This reconciles the arithmetic that Table II of both author papers appears to contradict: 9,335 / 6 ≈ 1,556 samples per signer × 130.3 ≈ 203,000 frames.
+- **ArabSign publishes no fixed split.** Its own benchmark states only that it "combined all signers' samples and split them into training and testing", with no ratio, seed, or file lists. [19] used "the common 80/20 data split", so the split is the authors' own choice and its exact composition is unrecoverable.
+- All 6 signers are male, aged 21–30, right-handed, one wearing eyeglasses, recorded in an unconstrained room with a white background. Identifiability, consent basis, and cloud-processing rights therefore still require examination at the data gate.
 
 ## Environment and patches
 
