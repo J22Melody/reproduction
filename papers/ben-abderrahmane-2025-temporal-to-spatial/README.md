@@ -54,7 +54,24 @@ The independent source search required before selecting a preference level has n
 
 ## Results
 
-No targets defined and no runs performed.
+No runs performed. The eight Table III numbers are enumerated as targets; the four LSTM rows are already terminal as copied baselines.
+
+| Target ID | Paper location | System | Dataset/split | Metric + version | Original | Reproduced | Difference | Terminal reason / evidence |
+| --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |
+| `table3-resnet-accuracy` | Table III, ResNet column, Accuracy | Proposed residual CNN | ArabSign, 80/20 per [19] | Accuracy, version unspecified | 0.9777 | — | — | not yet attempted |
+| `table3-resnet-precision` | Table III, ResNet column, Precision | Proposed residual CNN | ArabSign, 80/20 per [19] | Precision, weighted (inferred) | 0.9790 | — | — | not yet attempted |
+| `table3-resnet-recall` | Table III, ResNet column, Recall | Proposed residual CNN | ArabSign, 80/20 per [19] | Recall, weighted (inferred) | 0.9777 | — | — | not yet attempted |
+| `table3-resnet-f1` | Table III, ResNet column, F1-Score | Proposed residual CNN | ArabSign, 80/20 per [19] | F1, weighted (inferred) | 0.9773 | — | — | not yet attempted |
+| `table3-lstm-accuracy` | Table III, LSTM column, Accuracy | Prior LSTM from [19] | ArabSign, 80/20 per [19] | Accuracy, version unspecified | 0.8875 | — | — | `copied_baseline`: equals [19]'s reported 88.75% test accuracy exactly |
+| `table3-lstm-precision` | Table III, LSTM column, Precision | Prior LSTM from [19] | ArabSign, 80/20 per [19] | Precision, weighted (inferred) | 0.8930 | — | — | `copied_baseline`: [19]'s column; this value is not published in [19] |
+| `table3-lstm-recall` | Table III, LSTM column, Recall | Prior LSTM from [19] | ArabSign, 80/20 per [19] | Recall, weighted (inferred) | 0.8875 | — | — | `copied_baseline`: [19]'s column; this value is not published in [19] |
+| `table3-lstm-f1` | Table III, LSTM column, F1-Score | Prior LSTM from [19] | ArabSign, 80/20 per [19] | F1, weighted (inferred) | 0.8867 | — | — | `copied_baseline`: [19]'s column; this value is not published in [19] |
+
+The entire LSTM column is reference [19]'s system rather than a contribution of this paper, so all four of its rows are recorded as `not_produced` with reason `copied_baseline` and are not reproduced under this assignment. Only the accuracy row is verifiably copied: [19] reports accuracy alone, so its precision, recall, and F1 values are unsourced and their origin cannot be recovered from either paper.
+
+Table III also reports Model Size, Total Parameters, and Training Time. The portal requested Accuracy, Precision, Recall, and F1, so those three rows are out of scope as targets; the parameter counts are noted under Scope and the training-time comparison is recorded there as an inconsistency.
+
+Pipeline completeness and numerical agreement are separate and neither is yet determined.
 
 ## How to repeat this
 
@@ -87,7 +104,13 @@ No runs. No Modal resources created.
 
 ## Guesses and deviations
 
-None yet.
+| Detail | Paper/evidence says | This attempt used | Rationale | Effect on interpretation |
+| --- | --- | --- | --- | --- |
+| Precision/recall/F1 averaging | Not stated in either paper | Support-weighted average over the 50 classes | Table III reports Recall exactly equal to Accuracy in both columns (0.9777 and 0.8875). Support-weighted recall is identically equal to accuracy; macro and micro averaging are not | If the authors in fact used macro averaging, the three reproduced values shift. Classes are near-balanced at roughly 187 samples each, so the divergence should be small |
+| Train/test split | Target paper silent; [19] §5 says "the common 80/20 data split"; ArabSign publishes no official split | 80/20 over all 9,335 samples | §IV states the training parameters were adopted from [19] | Seed and exact composition are unrecoverable, so sample-level agreement cannot be expected. The split is signer-dependent by construction, so no signer-independent claim follows |
+| Learning rate | Target paper does not state it; [19] §5 states 0.001 | 0.001 | §IV: "same training parameters as our previous work[19]" | Low risk; the remaining optimizer settings are stated identically in both papers |
+
+Still to be decided before implementation: **which 10 frames** are taken from each video. Videos run 1.3–10.4 s at 30 fps (39–312 frames), and neither paper states the selection rule — [19] lists it as future work. A documented sampling choice will be added here.
 
 ## Attempts, failures, and dead ends
 
