@@ -127,19 +127,37 @@
     {
       "dataset_id": "arabsign",
       "name": "ArabSign",
-      "version_or_subset": "Full release: 9,335 samples of 50 ArSL sentences by 6 signers, at least 30 repetitions per sentence per signer. Colour modality only; the target paper runs MediaPipe pose over frames rather than using the provided Kinect skeleton stream.",
-      "license_or_permission": "Non-commercial only (\"NC only\") per the REPRO-SIGN dataset record; that record is the only licence statement available, since the official ArabSign page and its GitHub repository publish none. The dataset record's comments state \"download provided by Hamzah\", so the dataset author has supplied a copy to Team S. The terms accompanying that copy have not been seen and no project-cloud processing basis is yet established. See gate arabsign-access.",
-      "cloud_processing_allowed": false,
+      "version_or_subset": "RGB modality of the full release: 50 sentences by 6 signers, at least 30 takes per sentence per signer, 9,330 mp4 files verified in the six archives. Entry paths encode signer/split/sentenceID/signer_sentence_(timestamp)_c.mp4, so sample labels come from the path. The target paper runs MediaPipe pose over these colour frames rather than using the Kinect skeleton modality, which is a different estimator (25 joints in 3D camera space versus MediaPipe's 33 landmarks in 2D).",
+      "license_or_permission": "No licence is published anywhere for ArabSign. A search on 2026-09-18 found no licence, terms, copyright, permission, consent, ethics, or IRB statement in the dataset paper (arXiv:2210.03951, full text); no LICENSE, COPYING, TERMS, or agreement file among the 60 paths of github.com/Hamzah-Luqman/ArabSign (GitHub API reports \"license\": null); and no terms on the official project page or on the same author's KArSL page. The archives carry only a citation request in Readme.txt. The \"NC only\" value in the REPRO-SIGN dataset record is that record's own characterisation, not a published term. The operative basis is therefore the dataset author's direct permission: the assignee contacted Hamzah Luqman (KFUPM), who supplied the official download page https://hamzah-luqman.github.io/ArabSign/ for REPRO-SIGN project use, reported on 2026-09-18. Earlier, the author had provided Team S with the copy transferred on 2026-09-10 that supplied Skeleton and partial Depth. The RGB archives this reproduction added on 2026-09-18 came from the public download links on that same author-published page. The assignee authorised study use and project-cloud processing on that basis. The copy stays private to the repro-sign Modal workspace, no video or frame is redistributed or published, and the requested citation is recorded in reproduction.json.sources.",
+      "cloud_processing_allowed": true,
       "modal_volume": "datasets",
       "modal_path": "arab-sign",
       "splits": [
         {
-          "name": "no official split; the target paper states none and ArabSign publishes none",
-          "sample_count": 9335,
-          "files": []
+          "name": "official train directories shipped inside the RGB archives",
+          "sample_count": 7489,
+          "files": [
+            {
+              "path": "_drive_imports/72178996f6c31e6c/manifest.json",
+              "sha256": "645e22dea658c24fcca5a08d7b41df6b800584a06303fda7fcb87214462ce07a",
+              "role": "Transfer manifest for the six RGB archives, recording each archive's Drive file id, exact byte size, and SHA-256. The train/test split is encoded as a directory level inside those archives rather than as separate files."
+            }
+          ]
+        },
+        {
+          "name": "official test directories shipped inside the RGB archives",
+          "sample_count": 1841,
+          "files": [
+            {
+              "path": "_drive_imports/72178996f6c31e6c/manifest.json",
+              "sha256": "645e22dea658c24fcca5a08d7b41df6b800584a06303fda7fcb87214462ce07a",
+              "role": "Transfer manifest for the six RGB archives, recording each archive's Drive file id, exact byte size, and SHA-256. The train/test split is encoded as a directory level inside those archives rather than as separate files."
+            }
+          ]
         }
       ],
-      "known_mismatch": "Table II of the target paper labels 200,000 as the total frame count. ArabSign states this figure is for all sentences performed by one signer, which reconciles with 9,335/6 samples per signer at 130.3 frames each. The row is copied from reference [19] with the same label."
+      "known_mismatch": "Two documented discrepancies. (1) The RGB modality contains 9,330 videos, five fewer than the 9,335 samples claimed by the ArabSign paper and by Table II of the target paper. The Skeleton modality contains exactly 9,335 .mat files and the four present Depth archives match Skeleton's per-signer counts, so 9,335 is correct for the dataset and the published RGB release is short. RGB is a strict subset of Skeleton with no extra entries. The five absent videos are 01/test/0006/01_0006_(16_02_21_19_36_11)_c, 01/test/0044/01_0044_(20_03_21_20_09_50)_c, 01/train/0020/01_0020_(17_03_21_21_36_28)_c, 02/train/0020/02_0020_(02_03_21_21_01_08)_c, and 05/train/0042/05_0042_(20_03_21_19_25_26)_c. Effective RGB counts are 7,489 train and 1,841 test against Skeleton's 7,492 and 1,843. Transfer integrity is not implicated: every archive matched its source Content-Range byte size exactly. (2) Table II of the target paper labels 200,000 as the total frame count; the ArabSign paper states that figure is for all sentences performed by one signer. The row is copied from reference [19] with the same wrong label.",
+      "paper_preprocessing": "MediaPipe pose over colour frames, 33 landmarks with x and y, 10 frames per whole sentence video, giving input (10, 33, 2) and one sample per video labelled by its SentenceID. The frame-selection rule is not published by either paper."
     }
   ],
   "metric_definitions": [
@@ -203,7 +221,7 @@
       "paper_location": "Table III (Model Comparison), ResNet column, Accuracy row",
       "system": "Proposed temporal-to-spatial residual CNN",
       "experiment_id": "table-iii-resnet",
-      "split": "unspecified by paper; 80/20 inherited from [19]",
+      "split": "official ArabSign train/test directories; RGB 7,489/1,841",
       "metric_id": "accuracy",
       "original_value": 0.9777,
       "copied_baseline": false
@@ -214,7 +232,7 @@
       "paper_location": "Table III (Model Comparison), ResNet column, Precision row",
       "system": "Proposed temporal-to-spatial residual CNN",
       "experiment_id": "table-iii-resnet",
-      "split": "unspecified by paper; 80/20 inherited from [19]",
+      "split": "official ArabSign train/test directories; RGB 7,489/1,841",
       "metric_id": "precision-weighted",
       "original_value": 0.979,
       "copied_baseline": false
@@ -225,7 +243,7 @@
       "paper_location": "Table III (Model Comparison), ResNet column, Recall row",
       "system": "Proposed temporal-to-spatial residual CNN",
       "experiment_id": "table-iii-resnet",
-      "split": "unspecified by paper; 80/20 inherited from [19]",
+      "split": "official ArabSign train/test directories; RGB 7,489/1,841",
       "metric_id": "recall-weighted",
       "original_value": 0.9777,
       "copied_baseline": false
@@ -236,7 +254,7 @@
       "paper_location": "Table III (Model Comparison), ResNet column, F1-Score row",
       "system": "Proposed temporal-to-spatial residual CNN",
       "experiment_id": "table-iii-resnet",
-      "split": "unspecified by paper; 80/20 inherited from [19]",
+      "split": "official ArabSign train/test directories; RGB 7,489/1,841",
       "metric_id": "f1-weighted",
       "original_value": 0.9773,
       "copied_baseline": false
@@ -348,8 +366,8 @@
     {
       "gate_id": "arabsign-access",
       "type": "data",
-      "status": "open",
-      "reason": "ArabSign is not publicly downloadable: the official page distributes all three modalities only on request by email to the dataset author, and neither the page nor the GitHub repository carries a licence. The REPRO-SIGN dataset record gives the licence as \"NC only\" and records that a download was provided by the dataset author, so study access exists in principle. However the copy has not reached any project-accessible store, and the terms accompanying it have not been seen, so no cloud-processing basis is established. The corpus is video of six identifiable signers, so consent and reporting basis must be settled together with access.",
+      "status": "resolved",
+      "reason": "Resolved. Access, permission basis, expected counts, checksums, and the sample-to-label mapping are all established. The dataset author supplied the official download page to the assignee for REPRO-SIGN project use; no licence is published anywhere for ArabSign, so that grant is the operative basis and the assignee authorised study use and project-cloud processing on 2026-09-18. The RGB archives were transferred to datasets/arab-sign/RGB on 2026-09-18 and verified.",
       "evidence": [
         "REPRO-SIGN dataset record for ArabSign: licence \"NC only\"; assignee vera.czehmann@dfki.de; comments \"download provided by Hamzah\"; transcribed by the assignee on 2026-09-01.",
         "https://hamzah-luqman.github.io/ArabSign/ download section: \"To download any of these modalities, please send an email to Hamzah Luqman (hluqman@kfupm.edu.sa)\"; accessed 2026-08-28.",
@@ -357,9 +375,26 @@
         "check_modal_dataset.sh arabsign on 2026-08-28: 'Requested dataset arabsign is absent from Modal Volume datasets'.",
         "Modal workspace repro-sign on 2026-09-01 holds 10 volumes: datasets, huggingface-cache, and eight per-paper results volumes. No ArabSign volume exists and no arabsign path exists under datasets.",
         "Hugging Face organisation repro-sign on 2026-09-01: three models, zero datasets. A Hub search for 'arabsign' returns no public dataset.",
-        "ArabSign paper (arXiv:2210.03951) §III: six identifiable male signers aged 21-30 recorded on colour video."
+        "ArabSign paper (arXiv:2210.03951) §III: six identifiable male signers aged 21-30 recorded on colour video.",
+        "populate_arabsign_rgb on 2026-09-18, Modal call fc-01M2S6VRWS8D0ZVVXQ5RF5YKW2: six archives, 19,622,200,244 bytes, each matching its source Content-Range exactly, per-archive SHA-256 recorded in the transfer manifest.",
+        "verify_arabsign_rgb read-only audit: 9,330 mp4 entries, 50 sentence ids, zero unparsed paths, official train/test directory level totalling 7,489 and 1,841.",
+        "All three ArabSignGroundTruth.txt copies (RGB, Depth, Skeleton) hash to 2b64f16bb14859cad322824dd76ce9bf9ad17a63225fcbebf15bdb6e4f3f9288, matching the copy downloaded from the public project page.",
+        "check_modal_dataset.sh arab-sign _drive_imports/72178996f6c31e6c/manifest.json on 2026-09-18: 'Confirmed dataset arab-sign in Modal Volume datasets'."
       ],
-      "required_action": "Team S (vera.czehmann@dfki.de, contacted by the assignee on 2026-09-01) confirms where the author-provided ArabSign copy is held and on what terms, including whether project-cloud processing and reporting are covered under the non-commercial licence. Once confirmed, populate 'arabsign' on the shared 'datasets' Volume with verified counts and checksums. This reproduction must not contact the dataset author directly: data-access requests are coordinated by Team S."
+      "required_action": "None. For anyone reusing this directory: Depth remains incomplete, missing 01.7z and 05.7z from the earlier Team S transfer. This reproduction uses only RGB."
+    },
+    {
+      "gate_id": "arabsign-signer-consent",
+      "type": "ethics",
+      "status": "open",
+      "reason": "ArabSign is colour video of six identifiable signers, and no consent basis is documented anywhere. A search on 2026-09-18 found no consent, ethics, IRB, permission, or terms statement in the dataset paper, no licence or agreement file in its repository, and none on the project page. Access, cloud processing, storage, and reporting are settled: the author granted use for this project, the assignee authorised project-cloud processing, the copy stays private to the repro-sign workspace, and only metrics are reported with no imagery published. The consent basis for the original recording is the one element that cannot be established from published sources, so the assignee has chosen to keep this gate open rather than record a determination.",
+      "evidence": [
+        "ArabSign paper (arXiv:2210.03951) full text: no match for licence, terms, copyright, permission, consent, ethics, or IRB.",
+        "github.com/Hamzah-Luqman/ArabSign: no LICENSE, COPYING, TERMS, or agreement file among 60 paths; GitHub API reports \"license\": null.",
+        "ArabSign paper §III.B: six male signers aged 21-30, all right-handed, one wearing eyeglasses, recorded on colour video at 1920x1080.",
+        "Assignee decision on 2026-09-18 to leave this gate open."
+      ],
+      "required_action": "A human decision on whether the author's grant plus non-redistribution is a sufficient basis for processing identifiable signer video, or whether Team S should obtain an explicit statement of the original consent terms from KFUPM. This does not block the reproduction, which publishes no imagery."
     }
   ]
 }

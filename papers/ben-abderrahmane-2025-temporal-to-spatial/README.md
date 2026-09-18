@@ -8,7 +8,7 @@
 
 **Preference level:** 3
 
-**Pipeline status:** not yet determined — target contract and source search complete; the ArabSign data gate is open
+**Pipeline status:** not yet determined — target contract, source search, and data gate complete; no experiment has been run
 
 **Numerical agreement:** `not_assessed` — no in-scope target has produced a value; the four in-scope ResNet targets are unrun and the four LSTM rows are out of scope as copied baselines
 
@@ -58,7 +58,7 @@ Every element the reproduction must satisfy, with its evidence and whether the p
 | Keypoint extractor | MediaPipe pose model, 33 landmarks, x and y only (§III) | model variant/version not given |
 | Sample construction | 10 frames per video → input `(10, 33, 2)`; one sample per sentence video (§III, [19]) | yes, but frame **selection rule** is not given |
 | Labels | 50 sentence classes, one per ArabSign sentence (§III) | yes |
-| Split | 80/20 [19]; ArabSign publishes none | ratio only; no seed, signer policy, or file lists |
+| Split | Official train/test directories ship inside the ArabSign archives: RGB 7,489/1,841, i.e. 80.27/19.73, stratified within every signer-sentence cell | **no** — no paper references it; [19] says only "the common 80/20 data split" |
 | Optimizer | Adam, learning rate 0.001 [19] (§IV cites [19] for parameters) | yes |
 | Loss | Categorical cross-entropy (§IV) | yes |
 | Batch size / epochs | 32 / 100 (§IV) | yes |
@@ -90,7 +90,7 @@ The consequence for this reproduction: the residual blocks' internal structure �
 | --- | --- | --- | --- |
 | Paper PDF | https://doi.org/10.1109/PAIS66004.2025.11126496 | `0afdb6457dbfe7300d6a2c883d06676527bd39ecb658e59c17f48514db9d147c` | Target values and disclosed protocol |
 | Prior LSTM paper [19] | https://doi.org/10.2991/978-94-6463-496-9_24 | `c0d48f5e3c2a1ef2c560a7dd2bf36a41f6be7c9207648904720944b1a101a95f` | Inherited preprocessing, 80/20 split, optimizer settings, LSTM architecture, and origin of Table III's copied LSTM accuracy |
-| ArabSign dataset paper | https://arxiv.org/abs/2210.03951 | `7be6d45db9a17116201957bae100940d95b0f7fe36cf587b59b6aaa5ea94ccc8` | Authoritative dataset composition, modalities, frame statistics, absence of an official split |
+| ArabSign dataset paper | https://arxiv.org/abs/2210.03951 | `7be6d45db9a17116201957bae100940d95b0f7fe36cf587b59b6aaa5ea94ccc8` | Authoritative dataset composition, modalities, and frame statistics. It documents no split, although the distribution ships one |
 | ArabSign data/code | https://github.com/Hamzah-Luqman/ArabSign | not yet pinned | Access path named by the dataset paper; not yet inspected |
 | Published code for this paper | none found | — | Searched 2026-08-28; see the checklist below |
 | Weights/configs/supplements | none found | — | No supplementary material published by either venue |
@@ -117,14 +117,14 @@ No runs performed. The eight Table III numbers are enumerated as targets; the fo
 
 | Target ID | Paper location | System | Dataset/split | Metric + version | Original | Reproduced | Difference | Terminal reason / evidence |
 | --- | --- | --- | --- | --- | ---: | ---: | ---: | --- |
-| `table3-resnet-accuracy` | Table III, ResNet column, Accuracy | Proposed residual CNN | ArabSign, 80/20 per [19] | Accuracy, version unspecified | 0.9777 | — | — | not yet attempted |
-| `table3-resnet-precision` | Table III, ResNet column, Precision | Proposed residual CNN | ArabSign, 80/20 per [19] | Precision, weighted (inferred) | 0.9790 | — | — | not yet attempted |
-| `table3-resnet-recall` | Table III, ResNet column, Recall | Proposed residual CNN | ArabSign, 80/20 per [19] | Recall, weighted (inferred) | 0.9777 | — | — | not yet attempted |
-| `table3-resnet-f1` | Table III, ResNet column, F1-Score | Proposed residual CNN | ArabSign, 80/20 per [19] | F1, weighted (inferred) | 0.9773 | — | — | not yet attempted |
-| `table3-lstm-accuracy` | Table III, LSTM column, Accuracy | Prior LSTM from [19] | ArabSign, 80/20 per [19] | Accuracy, version unspecified | 0.8875 | — | — | `copied_baseline`: equals [19]'s reported 88.75% test accuracy exactly |
-| `table3-lstm-precision` | Table III, LSTM column, Precision | Prior LSTM from [19] | ArabSign, 80/20 per [19] | Precision, weighted (inferred) | 0.8930 | — | — | `copied_baseline`: [19]'s column; this value is not published in [19] |
-| `table3-lstm-recall` | Table III, LSTM column, Recall | Prior LSTM from [19] | ArabSign, 80/20 per [19] | Recall, weighted (inferred) | 0.8875 | — | — | `copied_baseline`: [19]'s column; this value is not published in [19] |
-| `table3-lstm-f1` | Table III, LSTM column, F1-Score | Prior LSTM from [19] | ArabSign, 80/20 per [19] | F1, weighted (inferred) | 0.8867 | — | — | `copied_baseline`: [19]'s column; this value is not published in [19] |
+| `table3-resnet-accuracy` | Table III, ResNet column, Accuracy | Proposed residual CNN | ArabSign, official train/test | Accuracy, version unspecified | 0.9777 | — | — | not yet attempted |
+| `table3-resnet-precision` | Table III, ResNet column, Precision | Proposed residual CNN | ArabSign, official train/test | Precision, weighted (inferred) | 0.9790 | — | — | not yet attempted |
+| `table3-resnet-recall` | Table III, ResNet column, Recall | Proposed residual CNN | ArabSign, official train/test | Recall, weighted (inferred) | 0.9777 | — | — | not yet attempted |
+| `table3-resnet-f1` | Table III, ResNet column, F1-Score | Proposed residual CNN | ArabSign, official train/test | F1, weighted (inferred) | 0.9773 | — | — | not yet attempted |
+| `table3-lstm-accuracy` | Table III, LSTM column, Accuracy | Prior LSTM from [19] | ArabSign, official train/test | Accuracy, version unspecified | 0.8875 | — | — | `copied_baseline`: equals [19]'s reported 88.75% test accuracy exactly |
+| `table3-lstm-precision` | Table III, LSTM column, Precision | Prior LSTM from [19] | ArabSign, official train/test | Precision, weighted (inferred) | 0.8930 | — | — | `copied_baseline`: [19]'s column; this value is not published in [19] |
+| `table3-lstm-recall` | Table III, LSTM column, Recall | Prior LSTM from [19] | ArabSign, official train/test | Recall, weighted (inferred) | 0.8875 | — | — | `copied_baseline`: [19]'s column; this value is not published in [19] |
+| `table3-lstm-f1` | Table III, LSTM column, F1-Score | Prior LSTM from [19] | ArabSign, official train/test | F1, weighted (inferred) | 0.8867 | — | — | `copied_baseline`: [19]'s column; this value is not published in [19] |
 
 The entire LSTM column is reference [19]'s system rather than a contribution of this paper, so all four of its rows are recorded as `not_produced` with reason `copied_baseline` and are not reproduced under this assignment. Only the accuracy row is verifiably copied: [19] reports accuracy alone, so its precision, recall, and F1 values are unsourced and their origin cannot be recovered from either paper.
 
@@ -140,29 +140,36 @@ Not yet applicable — no entry points exist.
 
 | Dataset | Version/subset/splits | Source and access date | License/permission and cloud-use basis | Path in Volume `datasets` | Counts / manifest / checksum | Deviations |
 | --- | --- | --- | --- | --- | --- | --- |
-| ArabSign | Full release; no official train/test split exists | Copy supplied by the dataset author to Team S; location not yet known to this reproduction | Non-commercial only ("NC only") per the REPRO-SIGN dataset record; no licence text published by the author | `arabsign` — **absent** from Volume `datasets` as of 2026-09-01 | 9,335 samples claimed by both papers; unverified | none |
+| ArabSign | RGB modality of the full release; official train/test directories, 7,489 / 1,841 | Author-published download page, transferred 2026-09-18 | Author's direct grant for REPRO-SIGN use; **no licence is published anywhere** | `arab-sign/RGB` on Volume `datasets` | 9,330 mp4 verified; manifest `645e22de…`; per-archive SHA-256 recorded | 5 videos absent from the RGB release; see below |
 
-**Gate `arabsign-access` is open and blocks implementation, but access exists in principle.** ArabSign is not publicly downloadable — the official page states *"To download any of these modalities, please send an email to Hamzah Luqman (hluqman@kfupm.edu.sa)"* — and neither the project page nor `Hamzah-Luqman/ArabSign` carries a licence (GitHub API reports `"license": null` at commit `8f6e127`). The REPRO-SIGN dataset record supplies the only licence statement available, **"NC only"**, and records in its comments that a *"download provided by Hamzah"* was obtained, with `vera.czehmann@dfki.de` as assignee.
+**Gate `arabsign-access` is resolved.** The data is on the shared Volume at `arab-sign/RGB`, and `check_modal_dataset.sh arab-sign _drive_imports/72178996f6c31e6c/manifest.json` confirms it.
 
-What is missing is the copy's location and the terms attached to it. Searches on 2026-09-01 found it in none of the project's stores:
+*Permission.* No licence exists for ArabSign. A search on 2026-09-18 found no licence, terms, copyright, permission, consent, ethics, or IRB statement in the dataset paper; no LICENSE, COPYING, TERMS, or agreement file among the 60 paths of `Hamzah-Luqman/ArabSign` (GitHub API reports `"license": null`); and no terms on the project page or on the same author's KArSL page. The archives carry only a citation request. The portal record's "NC only" is that record's own characterisation, not a published term. The operative basis is therefore the **dataset author's direct grant**: the assignee contacted Hamzah Luqman (KFUPM), who supplied the official download page for REPRO-SIGN project use, reported 2026-09-18. The assignee authorised study use and project-cloud processing on that basis. The copy stays private to the `repro-sign` workspace and no imagery is redistributed or published.
 
-| Store checked | Result |
-| --- | --- |
-| Modal Volume `datasets` | no `arabsign` path; `check_modal_dataset.sh arabsign` fails |
-| All Modal volumes in workspace `repro-sign` | 10 volumes — `datasets`, `huggingface-cache`, and eight per-paper results volumes. No ArabSign volume |
-| Hugging Face org `repro-sign` | 3 models, 0 datasets |
-| Hugging Face Hub search `arabsign` | no public dataset |
+*Acquisition.* Two author-traceable routes. Team S obtained a copy from the author and transferred it on 2026-09-10, which supplied Skeleton in full, Depth partially, and RGB's two text files only — no RGB video. This reproduction added the six RGB archives on 2026-09-18 from the public download links on the author's own project page (Modal call `fc-01M2S6VRWS8D0ZVVXQ5RF5YKW2`, 19,622,200,244 bytes, each archive matching its source `Content-Range` byte size exactly). The Volume also holds `arasl-database-grayscale`, a different Arabic dataset, which is **not** a substitute and has not been used.
 
-The assignee contacted Vera Czehmann on 2026-09-01. Resolving the gate needs confirmation of where the copy is held and whether the non-commercial terms cover project-cloud processing and reporting; `cloud_processing_allowed` therefore remains `false` until those terms are seen. This reproduction will not contact the dataset author directly, since data-access requests are coordinated by Team S. The Volume also holds `arasl-database-grayscale`, a different Arabic dataset, which is **not** a substitute and has not been used.
+*Verification.* A read-only audit found 9,330 mp4 entries across the six archives, 50 sentence IDs, and zero unparsed paths. Entry paths take the form `signer/split/sentenceID/signer_sentence_(timestamp)_c.mp4`, so **sample labels come from the path** rather than being presumed. All three `ArabSignGroundTruth.txt` copies (RGB, Depth, Skeleton) hash to `2b64f16bb14859ca…`, matching the copy downloaded independently from the public page.
 
-From the ArabSign paper (Luqman, FG 2023 / arXiv:2210.03951), relevant to the eventual gate:
+*The 5 missing videos.* RGB contains 9,330 videos, five fewer than the 9,335 both papers claim. Skeleton contains exactly 9,335 `.mat` files and the four present Depth archives match Skeleton's per-signer counts, so **9,335 is correct for the dataset and the published RGB release is short**. RGB is a strict subset of Skeleton with no extra entries, and transfer integrity is not implicated. The absent videos are:
+
+```
+01/test/0006/01_0006_(16_02_21_19_36_11)_c
+01/test/0044/01_0044_(20_03_21_20_09_50)_c
+01/train/0020/01_0020_(17_03_21_21_36_28)_c
+02/train/0020/02_0020_(02_03_21_21_01_08)_c
+05/train/0042/05_0042_(20_03_21_19_25_26)_c
+```
+
+Effective RGB counts are 7,489 train and 1,841 test, against Skeleton's 7,492 and 1,843 — a 0.05% shortfall that cannot affect any reported metric materially, but is recorded so the reproduced sample count is traceable. For anyone reusing this directory: **Depth remains incomplete**, missing `01.7z` and `05.7z` from the earlier transfer. This reproduction uses only RGB.
+
+From the ArabSign paper (Luqman, FG 2023 / arXiv:2210.03951):
 
 - 9,335 samples representing 50 sentences, performed by 6 signers, each sentence repeated at least 30 times per signer.
 - Recorded with Kinect V2 in three simultaneous modalities: colour 1920×1080 at 30 fps, depth 512×424, and skeleton joint points. The target paper uses MediaPipe pose on frames, so it consumes the colour modality rather than the provided skeleton data.
 - Video duration ranges from 1.3 s to 10.4 s; average sentence length 3.1 signs; vocabulary 95 signs across 155 signs in total.
 - "This resulted in around 200,000 frames for all sentences performed by **one signer**, with an average of 130.3 frames per sentence." This reconciles the arithmetic that Table II of both author papers appears to contradict: 9,335 / 6 ≈ 1,556 samples per signer × 130.3 ≈ 203,000 frames.
-- **ArabSign publishes no fixed split.** Its own benchmark states only that it "combined all signers' samples and split them into training and testing", with no ratio, seed, or file lists. [19] used "the common 80/20 data split", so the split is the authors' own choice and its exact composition is unrecoverable.
-- All 6 signers are male, aged 21–30, right-handed, one wearing eyeglasses, recorded in an unconstrained room with a white background. Identifiability, consent basis, and cloud-processing rights therefore still require examination at the data gate.
+- **ArabSign ships an official split that no paper documents.** The dataset *paper* states only that its benchmark "combined all signers' samples and split them into training and testing", with no ratio, seed, or file lists — but the *distribution* encodes a train/test directory level inside every archive. For RGB that is 7,489 train and 1,841 test, 80.27/19.73, stratified within each signer-sentence cell at roughly 25 and 6 of ~31 takes. [19]'s "common 80/20 data split" matches that ratio to within 0.3 points, which is consistent with it having used the shipped split, though neither paper says so. This attempt adopts the shipped split; see Guesses and deviations.
+- All 6 signers are male, aged 21–30, right-handed, one wearing eyeglasses, recorded in an unconstrained room with a white background. Access, cloud processing, storage, and reporting are settled above; the **consent basis for the original recording is documented nowhere**, which is tracked as the open ethics gate `arabsign-signer-consent`.
 
 ## Environment and patches
 
@@ -179,7 +186,7 @@ No runs. No Modal resources created.
 | Detail | Paper/evidence says | This attempt used | Rationale | Effect on interpretation |
 | --- | --- | --- | --- | --- |
 | Precision/recall/F1 averaging | Not stated in either paper | Support-weighted average over the 50 classes | Table III reports Recall exactly equal to Accuracy in both columns (0.9777 and 0.8875). Support-weighted recall is identically equal to accuracy; macro and micro averaging are not | If the authors in fact used macro averaging, the three reproduced values shift. Classes are near-balanced at roughly 187 samples each, so the divergence should be small |
-| Train/test split | Target paper silent; [19] §5 says "the common 80/20 data split"; ArabSign publishes no official split | 80/20 over all 9,335 samples | §IV states the training parameters were adopted from [19] | Seed and exact composition are unrecoverable, so sample-level agreement cannot be expected. The split is signer-dependent by construction, so no signer-independent claim follows |
+| Train/test split | Target paper is silent (no match for split, train, test, or partition in its full text); [19] §5 says only "the common 80/20 data split"; the ArabSign paper documents no split, but the distribution ships one | The official train/test directories shipped inside the archives: 7,489 train / 1,841 test for RGB | No paper names a split, so a choice is unavoidable. The shipped split is the author's, is deterministic and reproducible, needs no seed, and its 80.27/19.73 ratio matches [19]'s stated 80/20 to within 0.3 points — strictly better evidenced than a random split of our own | **Flagged as inferred**: it is not established that either paper used these directories. The split is signer-dependent by the dataset's design, with every signer in both halves, so no signer-independent claim follows from any result |
 | Learning rate | Target paper does not state it; [19] §5 states 0.001 | 0.001 | §IV: "same training parameters as our previous work[19]" | Low risk; the remaining optimizer settings are stated identically in both papers |
 
 Still to be decided before implementation: **which 10 frames** are taken from each video. Videos run 1.3–10.4 s at 30 fps (39–312 frames), and neither paper states the selection rule — [19] lists it as future work. A documented sampling choice will be added here.
@@ -192,8 +199,14 @@ None yet.
 
 The portal record carries ethics, human-evaluation, and copied-score fields, but their radio values did not survive transcription and are recorded as `null`; their absence here is a gap in our copy, not a clearance. Obtaining the machine export would resolve them. The assignee is separately checking `copied_scores` with the annotator, since this attempt's own reading of Table III is that the LSTM column is copied from reference [19].
 
-The paper reports no human evaluation. §III notes the ArabSign dataset comprises videos of identifiable male signers aged 21–30 recorded in consistent environments, so identifiability, consent basis, and cloud-processing rights must be examined at the data gate.
+The paper reports no human evaluation.
+
+**Open ethics gate `arabsign-signer-consent`.** ArabSign is colour video of six identifiable signers, and no consent basis is documented anywhere: the 2026-09-18 search found no consent, ethics, IRB, permission, or terms statement in the dataset paper, no agreement file in its repository, and none on the project page. Four of the five elements the study's rules require are settled — access by the author's grant, cloud processing by the assignee's authorisation, storage private to the `repro-sign` workspace, and reporting limited to metrics with no imagery published. The fifth, the consent basis for the original recording, cannot be established from published sources. The assignee chose on 2026-09-18 to leave this gate **open** rather than record a determination. It does not block the reproduction, which publishes no imagery.
 
 ## Author and team contact
 
-None.
+**Dataset author, for data access.** The assignee contacted Hamzah Luqman (KFUPM), author of the ArabSign dataset, and he supplied the official download page https://hamzah-luqman.github.io/ArabSign/ for REPRO-SIGN project use; reported on 2026-09-18. Team S had separately obtained a copy from him earlier, recorded in the portal dataset record as "download provided by Hamzah" and transferred to the shared Volume on 2026-09-10. This is a data-access request, which the study's rules exempt from the post-attempt author-contact restriction, and it is the permission basis recorded in `reproduction.json.datasets`.
+
+The contact concerned access only. No methodological, protocol, or implementation help was requested or received, and nothing about the reproduction of the target paper was discussed.
+
+**Target paper authors.** Not contacted. Ben-Abderrahmane, Oulad-Naoui, Cherif, and Chagha have not been approached about the missing protocol details, and will not be before an independent attempt is complete.
