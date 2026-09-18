@@ -8,15 +8,25 @@
 
 **Preference level:** 3
 
-**Status:** not yet determined — target contract and source search complete; the ArabSign data gate is open
+**Pipeline status:** not yet determined — target contract and source search complete; the ArabSign data gate is open
+
+**Numerical agreement:** `not_assessed` — no in-scope target has produced a value; the four in-scope ResNet targets are unrun and the four LSTM rows are out of scope as copied baselines
 
 **Attempt date:** 2026-08-28 (branched from `4894d7e`)
+
+## Reproduction agents
+
+| Agent ID | Model and version | Agent application | Contribution | Attribution evidence / unknowns |
+| --- | --- | --- | --- | --- |
+| `reproduction-agent` | Claude Opus 5 (1M context), model id `claude-opus-5[1m]` | Claude Code 2.1.12 | Assignment establishment, target contract, independent source search and pinning, protocol extraction from the paper and reference [19], and the ArabSign data gate | Identity reported by the live session on 2026-09-18. The version is the Claude Code installation on the executing machine (`claude --version`); this session runs through the VS Code extension against that installation, so it identifies the installation rather than a separately versioned extension build. Every commit on `claude/reproduce-temporal-to-spatial` carries a Co-Authored-By trailer naming Claude Opus 5 |
+
+No experiment has been run, so no run entry references an agent yet. When runs begin, each will record its executing `agent_ids`.
 
 ## Scope and target contract
 
 Eight targets are recorded in `reproduction.json.targets`, one per requested Table III number.
 
-The assignment was made through the REPRO-SIGN portal. No machine-readable candidate export was available, so the portal record was transcribed by hand into `assignment.normalized` and is marked as a transcription rather than an export. `assignment.kind` therefore remains `direct_user_request`, and no `assignment.record` is claimed. Radio-button fields — including `copied_scores`, `potential_ethical_concerns`, `includes_human_evaluation`, and the record's own `confirmation`/`status` — did not render their values and are recorded as `null` rather than guessed. The form still offered Finalize / Flag / Reject, so whether this record is `confirmed` and `final` is unverified.
+The assignment was made through the REPRO-SIGN portal. No machine-readable candidate export was available, so the portal record was transcribed by hand into `assignment.normalized` and is marked as a transcription rather than an export. `assignment.kind` therefore remains `direct_user_request`, and no `assignment.record` is claimed. Radio-button fields — including `copied_scores`, `potential_ethical_concerns`, `includes_human_evaluation`, and the record's own `confirmation`/`status` — did not render their values and are recorded as `null` rather than guessed. The paper's record **is final**: the portal's ArabSign dataset page lists this paper under "Used in Papers" marked "Final". Its `confirmation` field has still not been observed directly.
 
 The portal states **What to Reproduce: "Table 3"**, with metrics Accuracy, Precision, Recall, and F1. Those are exactly the rows of the paper's TABLE III (Model Comparison), which is read here as the requested table. Its two columns are the proposed ResNet system (Accuracy 0.9777, Precision 0.9790, Recall 0.9777, F1 0.9773) and an LSTM comparison (0.8875, 0.8930, 0.8875, 0.8867).
 
@@ -130,11 +140,20 @@ Not yet applicable — no entry points exist.
 
 | Dataset | Version/subset/splits | Source and access date | License/permission and cloud-use basis | Path in Volume `datasets` | Counts / manifest / checksum | Deviations |
 | --- | --- | --- | --- | --- | --- | --- |
-| ArabSign | Full release; no official train/test split exists | Paper read 2026-08-28; data **not obtained** — distributed only on email request to the author | **None established.** No licence on the project page or the GitHub repository | `arabsign` — **absent** from Volume `datasets` as of 2026-08-28 | 9,335 samples claimed by both papers; unverified | none |
+| ArabSign | Full release; no official train/test split exists | Copy supplied by the dataset author to Team S; location not yet known to this reproduction | Non-commercial only ("NC only") per the REPRO-SIGN dataset record; no licence text published by the author | `arabsign` — **absent** from Volume `datasets` as of 2026-09-01 | 9,335 samples claimed by both papers; unverified | none |
 
-**The data gate is open and blocks implementation.** ArabSign is not publicly downloadable: the official page states *"To download any of these modalities, please send an email to Hamzah Luqman (hluqman@kfupm.edu.sa)"*. There is no licence file on `Hamzah-Luqman/ArabSign` (GitHub API reports `"license": null` at commit `8f6e127`) and no click-through terms on the project page, so no permission basis for study use or project-cloud processing exists yet. `check_modal_dataset.sh arabsign` confirms the path is absent from the shared Volume.
+**Gate `arabsign-access` is open and blocks implementation, but access exists in principle.** ArabSign is not publicly downloadable — the official page states *"To download any of these modalities, please send an email to Hamzah Luqman (hluqman@kfupm.edu.sa)"* — and neither the project page nor `Hamzah-Luqman/ArabSign` carries a licence (GitHub API reports `"license": null` at commit `8f6e127`). The REPRO-SIGN dataset record supplies the only licence statement available, **"NC only"**, and records in its comments that a *"download provided by Hamzah"* was obtained, with `vera.czehmann@dfki.de` as assignee.
 
-This is gate `arabsign-access`, and it is **not yet assessed to a conclusion**: the facts above establish that no public download and no licence exist, but the assignee reports that colleagues have located a copy, whose provenance and terms have not yet been examined. The data gate will be worked through as its own stage. Author contact for data access is Team S's responsibility, not this reproduction's. The Volume also holds `arasl-database-grayscale`, a different Arabic dataset, which is **not** a substitute and has not been used.
+What is missing is the copy's location and the terms attached to it. Searches on 2026-09-01 found it in none of the project's stores:
+
+| Store checked | Result |
+| --- | --- |
+| Modal Volume `datasets` | no `arabsign` path; `check_modal_dataset.sh arabsign` fails |
+| All Modal volumes in workspace `repro-sign` | 10 volumes — `datasets`, `huggingface-cache`, and eight per-paper results volumes. No ArabSign volume |
+| Hugging Face org `repro-sign` | 3 models, 0 datasets |
+| Hugging Face Hub search `arabsign` | no public dataset |
+
+The assignee contacted Vera Czehmann on 2026-09-01. Resolving the gate needs confirmation of where the copy is held and whether the non-commercial terms cover project-cloud processing and reporting; `cloud_processing_allowed` therefore remains `false` until those terms are seen. This reproduction will not contact the dataset author directly, since data-access requests are coordinated by Team S. The Volume also holds `arasl-database-grayscale`, a different Arabic dataset, which is **not** a substitute and has not been used.
 
 From the ArabSign paper (Luqman, FG 2023 / arXiv:2210.03951), relevant to the eventual gate:
 
@@ -171,7 +190,7 @@ None yet.
 
 ## Candidate flags, ethics, and human evaluation
 
-The portal record carries ethics, human-evaluation, and copied-score fields, but their radio values did not survive transcription and are recorded as `null`; their absence here is a gap in our copy, not a clearance. Obtaining the machine export would resolve them.
+The portal record carries ethics, human-evaluation, and copied-score fields, but their radio values did not survive transcription and are recorded as `null`; their absence here is a gap in our copy, not a clearance. Obtaining the machine export would resolve them. The assignee is separately checking `copied_scores` with the annotator, since this attempt's own reading of Table III is that the LSTM column is copied from reference [19].
 
 The paper reports no human evaluation. §III notes the ArabSign dataset comprises videos of identifiable male signers aged 21–30 recorded in consistent environments, so identifiability, consent basis, and cloud-processing rights must be examined at the data gate.
 
