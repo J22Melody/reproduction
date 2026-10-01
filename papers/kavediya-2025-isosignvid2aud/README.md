@@ -101,11 +101,24 @@ Not yet applicable — no entry points exist.
 
 ## Data provenance and permissions
 
-No data gate has been run. The export marks both datasets `available: yes` and `on_modal: yes`, with ASL Citizen under a "custom Microsoft research license" and WLASL under a "Custom (research only)" licence; neither `permission_to_reproduce` nor `permission_model_weights` is filled in. None of this is verified.
+| Dataset | Volume path | Licence | State on 2026-10-01 |
+| --- | --- | --- | --- |
+| ASL Citizen | `/datasets/asl-citizen` | Microsoft Research License Terms (`use.txt`): non-commercial research, no redistribution | Complete: 83,399 videos, one per row of the official train/val/test CSVs |
+| WLASL v0.3 | `/datasets/WLASL` | C-UDA 1.0 | Partial: 15,146 of 21,083 samples; WLASL-100 1,443 of 2,038 (train 1,001/1,442, val 242/338, test 200/258). The rest are expired source URLs; completion is in progress |
+
+Cloud processing on the project's Modal storage is judged allowed for both by the assignee. Neither licence forbids it, and it is research use, not distribution. **Checkpoints are not published**: C-UDA would permit it for WLASL, but the Microsoft licence is silent on models, and the assignee chose not to publish either.
+
+**ASL-Citizen-1500 split sizes.** The paper's 23,365 / 5,282 / 17,798 come from train's 1,500 most frequent glosses applied to every split, not from the code's per-split selection, which gives 23,365 / 6,406 / 19,126 and misaligns labels (gate `aslc-vocabulary`). Places 629–1,500 go to 950 glosses tied at 15 training videos. Some tie-break reproduces the paper's counts exactly, but it is unrecoverable; ours follows CSV row order and gives 23,365 / 5,232 / 17,892.
+
+**WLASL-100 split sizes.** The paper's 1,448 / 252 / 336 match neither the official split (1,442 / 338 / 258) nor per-split selection (1,447 / 339 / 268); val and test look swapped. The volume stores whole source videos plus start and end times, which the published code cannot read, so a clip-and-CSV adapter is still needed.
 
 ## Environment and patches
 
-Not yet applicable.
+Not yet built. Planned: the study base image (NGC 26.04, Python 3.12), `pyproject.toml` dependencies with pytorchvideo pinned to a git commit.
+
+| Patch | SHA-256 | Concern |
+| --- | --- | --- |
+| `patches/01-train-vocabulary.patch` | `bdda1b0dfa992e2b7e7cfe5f8941d56ca654a1f222f40228e1847c0e41a8f404` | Use train's top-N glosses for every split (gate `aslc-vocabulary`) |
 
 ## Execution evidence
 

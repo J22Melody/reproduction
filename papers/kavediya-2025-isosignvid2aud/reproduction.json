@@ -279,32 +279,91 @@
     {
       "dataset_id": "asl-citizen",
       "name": "ASL Citizen",
-      "version_or_subset": "1500 most frequent glosses of the ~2731-gloss release (§IV.A); subset selection rule to be confirmed in code",
-      "license_or_permission": "unverified: export records \"custom Microsoft research license\"; data gate not run",
-      "cloud_processing_allowed": false,
+      "version_or_subset": "Official release (2,731 glosses). Subset: the 1,500 most frequent glosses in train, applied to all splits (patch 01). 628 glosses are clearly in; the last 872 places go to 950 glosses tied at 15 training videos, broken by CSV row order.",
+      "license_or_permission": "Microsoft Research License Terms (/datasets/asl-citizen/use.txt): non-commercial research use; no distribution of the data or modifications (§1c, §2e); results may be published without substantial portions of the Materials (§5). Silent on trained models, so checkpoints are not published (assignee decision, 2026-10-01). Cloud processing on the project's Modal storage judged allowed by the assignee on 2026-10-01: it is research use and not distribution.",
+      "cloud_processing_allowed": true,
       "modal_volume": "datasets",
       "modal_path": "asl-citizen",
       "splits": [
         {
-          "name": "official train/val/test split, restricted to the 1500 most frequent glosses",
-          "sample_count": null,
-          "files": []
+          "name": "train",
+          "sample_count": 23365,
+          "files": [
+            {
+              "path": "asl-citizen/splits/train.csv",
+              "sha256": "87a105649b98ea577182ebfce49d59fe9ca834a2489384f6fe7bc03f14966329",
+              "rows": 40154
+            }
+          ],
+          "note": "Full split 40154 rows, all 40154 videos present on the volume. Paper reports 23365."
+        },
+        {
+          "name": "val",
+          "sample_count": 5232,
+          "files": [
+            {
+              "path": "asl-citizen/splits/val.csv",
+              "sha256": "6ac78c9d551dfcc81d225a5279d7637c2891a4490851234be6e4674666e21366",
+              "rows": 10304
+            }
+          ],
+          "note": "Full split 10304 rows, all 10304 videos present on the volume. Paper reports 5282."
+        },
+        {
+          "name": "test",
+          "sample_count": 17892,
+          "files": [
+            {
+              "path": "asl-citizen/splits/test.csv",
+              "sha256": "b1dee8f81204895ca1760f6bd582eec84cf390b9c97c4387e49b9cc6b906b21e",
+              "rows": 32941
+            }
+          ],
+          "note": "Full split 32941 rows, all 32941 videos present on the volume. Paper reports 17798."
         }
       ]
     },
     {
       "dataset_id": "wlasl",
       "name": "WLASL",
-      "version_or_subset": "WLASL-100, the 100 most frequent glosses of the 2000-gloss release (§IV.A)",
-      "license_or_permission": "unverified: export records \"Custom (research only)\"; data gate not run",
-      "cloud_processing_allowed": false,
+      "version_or_subset": "WLASL v0.3 (WLASL_v0.3.json sha256 31ba5a5c421bdbff87494ee22ca6d4e276a8dfac44f43cc9a58b76ed1c4cd684). WLASL-100 = the first 100 glosses of the JSON, which equal the 100 most frequent overall.",
+      "license_or_permission": "Computational Use of Data Agreement 1.0: computational use permitted; trained models are Results, which §2.2 leaves unrestricted. Checkpoints nonetheless not published, by assignee decision on 2026-10-01. Cloud processing judged allowed by the assignee on 2026-10-01.",
+      "cloud_processing_allowed": true,
       "modal_volume": "datasets",
       "modal_path": "WLASL",
       "splits": [
         {
-          "name": "official WLASL-100 train/val/test split",
+          "name": "train",
           "sample_count": null,
-          "files": []
+          "files": [
+            {
+              "path": "WLASL/index.csv",
+              "sha256": "fba4a2c0b9b545577b5a60532d24eaef9af8f175ad371b3222cfd3182d487ddc"
+            }
+          ],
+          "note": "Official WLASL-100 1442; on the volume 1001; paper reports 1448. Missing videos are expired source URLs; completion in progress."
+        },
+        {
+          "name": "val",
+          "sample_count": null,
+          "files": [
+            {
+              "path": "WLASL/index.csv",
+              "sha256": "fba4a2c0b9b545577b5a60532d24eaef9af8f175ad371b3222cfd3182d487ddc"
+            }
+          ],
+          "note": "Official WLASL-100 338; on the volume 242; paper reports 252. Missing videos are expired source URLs; completion in progress."
+        },
+        {
+          "name": "test",
+          "sample_count": null,
+          "files": [
+            {
+              "path": "WLASL/index.csv",
+              "sha256": "fba4a2c0b9b545577b5a60532d24eaef9af8f175ad371b3222cfd3182d487ddc"
+            }
+          ],
+          "note": "Official WLASL-100 258; on the volume 200; paper reports 336. Missing videos are expired source URLs; completion in progress."
         }
       ]
     }
@@ -1106,6 +1165,32 @@
           "description": "Pass scheduler_patience (2).",
           "paper_evidence": "Matches §IV.E and config.yaml.",
           "decision_needed": "Accept a behaviour-changing patch to training."
+        }
+      ]
+    },
+    {
+      "gate_id": "aslc-vocabulary",
+      "type": "protocol",
+      "status": "resolved",
+      "reason": "verify.py selects the top-N glosses separately per split and WLASLDataset numbers labels per split, so on ASL Citizen only 1.0% of val and 1.2% of test labels map to the gloss the model was trained on.",
+      "evidence": [
+        "Per-split top-1500 vocabularies share 532 (val) and 751 (test) glosses with train.",
+        "Split sizes: per-split rule 23365/6406/19126; train vocabulary for all splits 23365/5232/17892; the paper's 23365/5282/17798 is reachable exactly by a tie-break of the train-vocabulary rule and never by the per-split rule.",
+        "Every train-vocabulary gloss occurs in val and test, so all splits share one sorted class list."
+      ],
+      "required_action": "Resolved by the assignee on 2026-10-01: apply patches/01-train-vocabulary.patch, since it matches the paper. The authors' tie-break among 950 glosses tied at the cutoff is unrecoverable; ours follows CSV row order.",
+      "alternatives": [
+        {
+          "alternative_id": "as-published",
+          "description": "Per-split vocabulary.",
+          "paper_evidence": "Contradicts the reported split sizes.",
+          "decision_needed": "Accept near-chance accuracy from misaligned labels."
+        },
+        {
+          "alternative_id": "train-vocabulary",
+          "description": "Train's top-N for all splits.",
+          "paper_evidence": "Reproduces the train count exactly; val and test reachable by tie-break.",
+          "decision_needed": "Accept a behaviour-changing patch."
         }
       ]
     }
