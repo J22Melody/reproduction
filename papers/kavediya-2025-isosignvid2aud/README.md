@@ -65,6 +65,14 @@ None of these blocks the work; they are recorded as found.
 | PESQ | abstract 2.67 | Table III 2.68 |
 | PESQ range | §IV.J −0.5 to 4.5 | Table III footnote 1 to 5; code uses wideband PESQ |
 | Metrics | export lists F1 | Table II has no F1 column |
+| Augmentation | §IV.B: enlarges the *training* set fivefold | `augmentation.py`: augments train, val **and test**, replacing each CSV with the five augmented copies only — every reported test metric is computed on augmented test videos |
+| Extractor LR scheduler | §IV.E: patience 2 | `extractor/train.py`: `patience=scheduler_factor`, i.e. 0.3 |
+| Spectrogram | §IV.F: 1025×100, channels are magnitude and phase | `config.yaml`: `max_length: 64` frames; channels are trained and inverted as real and imaginary parts |
+| Audio sample rate | not stated | ISTFT output labelled 24 kHz in `generator/__init__.py`, scored as 22.05 kHz by `transformer/test.py`; the PESQ/STOI/SNR reference is the ISTFT of the padded TTS spectrogram, not the TTS audio |
+| BLEU | §V.A: n-gram overlap | `test.py`: `weights=(1,0,0,0)`, i.e. BLEU-1 |
+| Sequence test | runs | `test.py` @ `a1d6ff6`+: `n_words` is overwritten with each video's gloss count and passed to `predict`, so the checkpoint fails to load and every video is skipped |
+| Device | single GPU | `extractor/train.py`, `models/train.py`: hardcoded `cuda:1` |
+| Dependencies | — | `requirements.txt` pins PyPI `pytorchvideo==0.1.5`, which does not import with torchvision ≥ 0.17; `pyproject.toml` takes pytorchvideo from git, unpinned, and adds gTTS, Whisper and the metric packages; code requires Python 3.12 |
 
 **Latent label-mapping risk, to check at the data gate.** `verify.py` calls `create_subset` separately on train, test and val, so each split selects its own top-N glosses from its own counts; `extractor/dataset.py` then indexes labels by each split's own sorted vocabulary. If the per-split vocabularies differ by even one gloss, every later index shifts and predictions are scored against a different mapping. It is harmless if they coincide, which is checkable from the CSVs alone. The same code also means WLASL-100 is selected by per-split frequency rather than from WLASL's official 100-class definition, which bears on Table II's comparison with copied baselines.
 
@@ -72,13 +80,16 @@ None of these blocks the work; they are recorded as found.
 
 | Artifact | Canonical source | Pinned revision / SHA-256 | Role |
 | --- | --- | --- | --- |
-| Paper | https://arxiv.org/abs/2510.07837 | not yet pinned | Targets and disclosed protocol |
-| Published code | https://github.com/Kugelblitz25/IsoSignVid2Aud | `d4777cfdf41a24bc8c22a41c6d075ebc470c60f0` | Official implementation; Apache-2.0; not yet read or run |
+| Paper | https://arxiv.org/abs/2510.07837 | `868a798f36dd55867580065bdf5422740849cf19b6cb15660d0ef0dc77781ead` | Targets and disclosed protocol; v1 of 2025-10-09, the only version |
+| Published code | https://github.com/Kugelblitz25/IsoSignVid2Aud | `d4777cfdf41a24bc8c22a41c6d075ebc470c60f0` | Official implementation; Apache-2.0; read in full, not yet run |
 | Author pointer repo | https://github.com/BheeshmSharma/IsoSignVid2Aud_AIMLsystems-2025 | `190e51430cab` | The repository the abstract links to; README only, forwards to the implementation |
+| Project page | https://kugelblitz25.github.io/sign2speech/ | accessed 2026-10-01 | Linked by the code README; redirects to a page returning HTTP 404 |
 
 **Code is available, contrary to the export.** The export records `code_repos: N/A` and the reviewer noted "No link found in the abstract under 'Code is available at: this link.'". The link is present on the arXiv abstract page, but renders as the text "this https URL", so it is invisible when the abstract is read as plain text. It resolves to the pointer repository above, whose README forwards to the implementation.
 
-`assignment.record` preserves the export verbatim; `assignment.normalized.code_repos` carries the correction, per the contract's rule that normalized "does not override the raw record". The assignee has asked Team S to correct the portal record. A full independent source search has not yet been run.
+`assignment.record` preserves the export verbatim; `assignment.normalized.code_repos` carries the correction, per the contract's rule that normalized "does not override the raw record". The assignee has asked Team S to correct the portal record.
+
+**No trained checkpoint is released, and no revision is marked as the paper's.** Searched on 2026-10-01: all 8 branches and 117 commits of the code repository, its releases, the author's other GitHub repositories, Hugging Face, and the web. The history is not linear. Two commits matter: `740556e` (3 Oct 2025, merged 12 Oct, after arXiv v1 on 9 Oct) commented out WLASL bounding-box cropping and `frame_start`/`frame_end` trimming, so Table II may have been produced with them; `a1d6ff6` (29 Dec 2025) introduced the `test.py` bug below. Development result files committed along the way (e.g. WLASL Top-1 75.62, PESQ 2.86) match no reported number.
 
 ## Results
 

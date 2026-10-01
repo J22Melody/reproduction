@@ -235,7 +235,7 @@
     "title": "IsoSignVid2Aud: Sign Language Video to Audio Conversion Without Text Intermediaries",
     "citation": "Kavediya, H.; Nayak, V.; Sharma, B.; Palaniappan, B. IsoSignVid2Aud: Sign Language Video to Audio Conversion without Text Intermediaries. arXiv:2510.07837, 2025. Presented at the International Conference on AI-ML-Systems (AIMLSystems), 2025.",
     "url": "https://arxiv.org/abs/2510.07837",
-    "pdf_sha256": null,
+    "pdf_sha256": "868a798f36dd55867580065bdf5422740849cf19b6cb15660d0ef0dc77781ead",
     "accessed_at": "2026-10-01"
   },
   "sources": [
@@ -243,15 +243,15 @@
       "source_id": "paper-arxiv",
       "kind": "paper",
       "url": "https://arxiv.org/abs/2510.07837",
-      "revision_or_sha256": "not yet pinned",
-      "role": "Target values and disclosed protocol."
+      "revision_or_sha256": "868a798f36dd55867580065bdf5422740849cf19b6cb15660d0ef0dc77781ead",
+      "role": "Target values and disclosed protocol. arXiv v1 of 2025-10-09, the only version; SHA-256 of the PDF."
     },
     {
       "source_id": "published-code",
       "kind": "code",
       "url": "https://github.com/Kugelblitz25/IsoSignVid2Aud",
       "revision_or_sha256": "d4777cfdf41a24bc8c22a41c6d075ebc470c60f0",
-      "role": "Official implementation named by the paper. Apache-2.0, 36 files on branch master covering the extractor, transformer, generator, NMS, training, inference, and config. Not yet read or run."
+      "role": "Official implementation named by the paper; Apache-2.0. Read in full on 2026-10-01 from the commit snapshot (codeload tar.gz SHA-256 c271bb7d836b2451f1b308e640d28b12f5ec941cb50eda3b1634786575ea85e7; 34 tracked files). master is the branch both READMEs link. The history has 117 commits on 8 branches, is not linear, and has no tag or release marking the paper's revision. arXiv v1 (2025-10-09) post-dates 740556e (2025-10-03, merged 2025-10-12), which commented out WLASL bounding-box cropping and frame_start/frame_end trimming in augmentation; a1d6ff6 (2025-12-29) changed test.py after publication. Committed development results (e.g. experiments/wlasl/test_results_summary.csv @ 415071d: Top-1 75.62, Top-5 93.19; experiments/audio_test/test_results.txt @ 00dc0e3: PESQ 2.86, STOI 0.89) match no reported number. No trained IsoSignVid2Aud checkpoint is released in any branch, release, or Hugging Face account."
     },
     {
       "source_id": "author-pointer-repo",
@@ -259,6 +259,13 @@
       "url": "https://github.com/BheeshmSharma/IsoSignVid2Aud_AIMLsystems-2025",
       "revision_or_sha256": "190e51430cab",
       "role": "The repository the arXiv abstract links to. Contains only a README that forwards to the implementation above and to a project page; no code of its own."
+    },
+    {
+      "source_id": "project-page",
+      "kind": "project_page",
+      "url": "https://kugelblitz25.github.io/sign2speech/",
+      "revision_or_sha256": "accessed-2026-10-01",
+      "role": "Project page linked by the code README. On 2026-10-01 it redirects to https://kugelblitz.space/sign2speech/, which returns HTTP 404."
     }
   ],
   "status": {
@@ -1024,6 +1031,81 @@
           "description": "Run the pipeline with the jointly trained model.",
           "paper_evidence": "Not ruled out by the text.",
           "decision_needed": "Whether this is the variant the paper reports."
+        }
+      ]
+    },
+    {
+      "gate_id": "code-revision",
+      "type": "protocol",
+      "status": "resolved",
+      "reason": "No tag, release or commit marks the revision that produced the paper's numbers, and the history is not linear. 740556e, merged after arXiv v1, commented out WLASL bounding-box cropping and frame_start/frame_end trimming.",
+      "evidence": [
+        "git history of Kugelblitz25/IsoSignVid2Aud: 117 commits on 8 branches; 740556e dated 2025-10-03, merged by d9495e1 on 2025-10-12; arXiv v1 published 2025-10-09.",
+        "Both READMEs link the master branch."
+      ],
+      "required_action": "Resolved by the assignee on 2026-10-01: pin master at d4777cfd. Possible bounding-box cropping and trimming in the paper's Table II run is recorded as a deviation risk.",
+      "alternatives": [
+        {
+          "alternative_id": "master",
+          "description": "Use d4777cfd, the revision the authors link.",
+          "paper_evidence": "Linked from the paper's pointer repository.",
+          "decision_needed": "Accept that the paper's exact revision is unknown."
+        },
+        {
+          "alternative_id": "reconstructed",
+          "description": "Rebuild a pre-740556e state for WLASL experiments.",
+          "paper_evidence": "None; the paper does not mention cropping or trimming.",
+          "decision_needed": "Accept a guessed revision."
+        }
+      ]
+    },
+    {
+      "gate_id": "test-set-augmentation",
+      "type": "protocol",
+      "status": "resolved",
+      "reason": "augmentation.py runs on train, val and test and replaces each CSV with the five augmented copies only, so the published code scores augmented test videos. The paper describes augmentation as enlarging the training set. No seed is set, so the augmented copies differ on every run.",
+      "evidence": [
+        "models/extractor/preprocessing/augmentation.py at d4777cfd: main() loops over train, test and val and overwrites each CSV with augment_dataset() output, which contains only the i_ copies.",
+        "Paper §IV.B: augmentation 'increased our effective training set size by a factor of 5'."
+      ],
+      "required_action": "Resolved by the assignee on 2026-10-01: run as the code does; additionally score the original, unaugmented test videos as a diagnostic that does not stand in for any target.",
+      "alternatives": [
+        {
+          "alternative_id": "as-published",
+          "description": "Evaluate on the augmented test copies.",
+          "paper_evidence": "What the code does.",
+          "decision_needed": "Accept a test set that differs from the dataset's."
+        },
+        {
+          "alternative_id": "original-test",
+          "description": "Evaluate on the unaugmented test videos.",
+          "paper_evidence": "Matches §IV.B's description of augmenting training data.",
+          "decision_needed": "Accept a behaviour-changing change to evaluation."
+        }
+      ]
+    },
+    {
+      "gate_id": "extractor-scheduler-patience",
+      "type": "protocol",
+      "status": "resolved",
+      "reason": "models/extractor/train.py passes patience=self.train_config.scheduler_factor (0.3) to ReduceLROnPlateau instead of scheduler_patience (2), so the LR is cut after every non-improving epoch rather than after three. The combined trainer passes scheduler_patience correctly.",
+      "evidence": [
+        "models/extractor/train.py at d4777cfd: ReduceLROnPlateau(..., factor=scheduler_factor, patience=scheduler_factor).",
+        "config.yaml: scheduler_patience: 2, scheduler_factor: 0.3. Paper §IV.E: 'factor=0.3, patience=2'."
+      ],
+      "required_action": "Resolved by the assignee on 2026-10-01: keep the code as published; record the deviation from §IV.E.",
+      "alternatives": [
+        {
+          "alternative_id": "as-published",
+          "description": "Keep patience 0.3.",
+          "paper_evidence": "What the code does.",
+          "decision_needed": "Accept a deviation from §IV.E."
+        },
+        {
+          "alternative_id": "paper",
+          "description": "Pass scheduler_patience (2).",
+          "paper_evidence": "Matches §IV.E and config.yaml.",
+          "decision_needed": "Accept a behaviour-changing patch to training."
         }
       ]
     }
