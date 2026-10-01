@@ -6,10 +6,22 @@
       "model_id": "claude-opus-5[1m]",
       "harness": "Claude Code",
       "harness_version": "2.1.12",
-      "scope": "Assignment establishment only so far; no targets resolved and no experiment run.",
+      "scope": "Assignment establishment (stage 1).",
       "evidence": [
         "Live session identity reported by the running harness on 2026-10-01: model name \"Opus 5 (1M context)\", exact model id \"claude-opus-5[1m]\".",
         "harness_version is the Claude Code version on the executing machine; the session runs through its VS Code extension."
+      ]
+    },
+    {
+      "agent_id": "reproduction-agent-opus-5-5",
+      "model": "Claude Opus 5.5",
+      "model_id": "claude-opus-5-5",
+      "harness": "Claude Code",
+      "harness_version": "2.1.12",
+      "scope": "Target contract onward, after the model was switched mid-attempt on 2026-10-01.",
+      "evidence": [
+        "Live session identity reported by the running harness on 2026-10-01: model name \"Opus 5.5\", exact model id \"claude-opus-5-5\".",
+        "The assignee switched the session model from Opus 5 to Opus 5.5 after stage 1; the earlier entry is preserved for that stage."
       ]
     }
   ],
@@ -256,11 +268,764 @@
     "preference_level": null,
     "blocker": null
   },
-  "datasets": [],
-  "metric_definitions": [],
-  "experiments": [],
-  "targets": [],
+  "datasets": [
+    {
+      "dataset_id": "asl-citizen",
+      "name": "ASL Citizen",
+      "version_or_subset": "1500 most frequent glosses of the ~2731-gloss release (§IV.A); subset selection rule to be confirmed in code",
+      "license_or_permission": "unverified: export records \"custom Microsoft research license\"; data gate not run",
+      "cloud_processing_allowed": false,
+      "modal_volume": "datasets",
+      "modal_path": "asl-citizen",
+      "splits": [
+        {
+          "name": "official train/val/test split, restricted to the 1500 most frequent glosses",
+          "sample_count": null,
+          "files": []
+        }
+      ]
+    },
+    {
+      "dataset_id": "wlasl",
+      "name": "WLASL",
+      "version_or_subset": "WLASL-100, the 100 most frequent glosses of the 2000-gloss release (§IV.A)",
+      "license_or_permission": "unverified: export records \"Custom (research only)\"; data gate not run",
+      "cloud_processing_allowed": false,
+      "modal_volume": "datasets",
+      "modal_path": "WLASL",
+      "splits": [
+        {
+          "name": "official WLASL-100 train/val/test split",
+          "sample_count": null,
+          "files": []
+        }
+      ]
+    }
+  ],
+  "metric_definitions": [
+    {
+      "metric_id": "top1",
+      "name": "Top-1 accuracy",
+      "direction": "higher",
+      "implementation": "models/extractor/test.py: torch.max over classifier logits equals the label",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "fraction of test videos",
+      "unit_or_scale": "percent"
+    },
+    {
+      "metric_id": "top5",
+      "name": "Top-5 accuracy",
+      "direction": "higher",
+      "implementation": "models/extractor/test.py: label within torch.topk(logits, 5)",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "fraction of test videos",
+      "unit_or_scale": "percent"
+    },
+    {
+      "metric_id": "f1",
+      "name": "F1",
+      "direction": "higher",
+      "implementation": "models/extractor/test.py: sklearn f1_score(average='weighted')",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "support-weighted over classes",
+      "unit_or_scale": "fraction in [0, 1]"
+    },
+    {
+      "metric_id": "pesq",
+      "name": "PESQ",
+      "direction": "higher",
+      "implementation": "models/transformer/test.py: pesq(16000, ..., 'wb'), wideband, both signals resampled to 16 kHz; reference is ISTFT of the gTTS-derived target spectrogram",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "mean over test samples",
+      "unit_or_scale": "MOS-LQO; §IV.J states -0.5 to 4.5 and Table III states 1 to 5"
+    },
+    {
+      "metric_id": "stoi",
+      "name": "STOI",
+      "direction": "higher",
+      "implementation": "models/transformer/test.py: pystoi stoi(extended=False)",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "mean over test samples",
+      "unit_or_scale": "fraction in [0, 1]"
+    },
+    {
+      "metric_id": "snr",
+      "name": "SNR",
+      "direction": "higher",
+      "implementation": "models/transformer/test.py: 10*log10(signal_power / noise_power)",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "mean over test samples",
+      "unit_or_scale": "dB"
+    },
+    {
+      "metric_id": "spec-error",
+      "name": "\"MSE\" as reported",
+      "direction": "lower",
+      "implementation": "models/transformer/test.py line 221: np.mean(np.sqrt((gen - tgt) ** 2)), which is mean absolute error, not mean squared error",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "NOT aggregated: the value is assigned rather than appended, so the reported figure is the error of the final test sample only",
+      "unit_or_scale": "spectrogram units"
+    },
+    {
+      "metric_id": "wer",
+      "name": "WER",
+      "direction": "lower",
+      "implementation": "test.py: jiwer.wer against the gloss sequence, on a Whisper 'large' transcription of the generated audio",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "mean over sequences",
+      "unit_or_scale": "fraction"
+    },
+    {
+      "metric_id": "cer",
+      "name": "CER",
+      "direction": "lower",
+      "implementation": "test.py: jiwer.cer, otherwise as WER",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "mean over sequences",
+      "unit_or_scale": "fraction"
+    },
+    {
+      "metric_id": "bleu",
+      "name": "BLEU",
+      "direction": "higher",
+      "implementation": "test.py: nltk sentence_bleu with SmoothingFunction().method4",
+      "version": "per pinned code at d4777cfd",
+      "aggregation": "mean of sentence-level scores over sequences",
+      "unit_or_scale": "fraction in [0, 1]"
+    }
+  ],
+  "experiments": [
+    {
+      "experiment_id": "table1-aslcitizen",
+      "dataset_id": "asl-citizen",
+      "system": "Isolated sign recognition on ASL-Citizen-1500: an I3D baseline, the standalone IsoSignVid2Aud extractor, and the jointly trained model.",
+      "checkpoint_rule": "Early stopping (patience 5) on validation loss; best validation model (§IV.E, §IV.H).",
+      "paper_evidence": "Table I; §V.A."
+    },
+    {
+      "experiment_id": "table2-wlasl100",
+      "dataset_id": "wlasl",
+      "system": "Isolated sign recognition on WLASL-100: the two IsoSignVid2Aud variants against seven cited methods.",
+      "checkpoint_rule": "As table1-aslcitizen.",
+      "paper_evidence": "Table II; §V.A."
+    },
+    {
+      "experiment_id": "table3-audio-wlasl100",
+      "dataset_id": "wlasl",
+      "system": "Audio generated from I3D features by the spectrogram generator and ISTFT, scored against gTTS renderings of each gloss.",
+      "checkpoint_rule": "Best validation model (§IV.H).",
+      "paper_evidence": "Table III; §V.B."
+    },
+    {
+      "experiment_id": "sequence-aslcitizen",
+      "dataset_id": "asl-citizen",
+      "system": "End-to-end pipeline with NMS on synthetic sequences of up to 10 concatenated isolated clips per participant, 100 participants sampled with replacement; generated audio transcribed by Whisper large.",
+      "checkpoint_rule": "Not stated; which trained variant produced these numbers is not stated.",
+      "paper_evidence": "§V.A, final paragraphs; no table."
+    }
+  ],
+  "targets": [
+    {
+      "target_id": "t1-i3d-top1",
+      "in_scope": true,
+      "paper_location": "Table I, I3D [6]",
+      "system": "I3D [6]",
+      "experiment_id": "table1-aslcitizen",
+      "split": "official train/val/test split, restricted to the 1500 most frequent glosses",
+      "metric_id": "top1",
+      "original_value": 71.1,
+      "copied_baseline": false,
+      "copied_baseline_note": "Cited to [6], but [6] (arXiv:2304.05934) reports I3D at 63.10% on the full 2731-class set and 74.16% on its WLASL-overlap subset; 71.10 / 90.13 / 0.70 appears nowhere in it. Treated as the authors' own run on their 1500-gloss subset, so in scope."
+    },
+    {
+      "target_id": "t1-i3d-top5",
+      "in_scope": true,
+      "paper_location": "Table I, I3D [6]",
+      "system": "I3D [6]",
+      "experiment_id": "table1-aslcitizen",
+      "split": "official train/val/test split, restricted to the 1500 most frequent glosses",
+      "metric_id": "top5",
+      "original_value": 90.13,
+      "copied_baseline": false,
+      "copied_baseline_note": "Cited to [6], but [6] (arXiv:2304.05934) reports I3D at 63.10% on the full 2731-class set and 74.16% on its WLASL-overlap subset; 71.10 / 90.13 / 0.70 appears nowhere in it. Treated as the authors' own run on their 1500-gloss subset, so in scope."
+    },
+    {
+      "target_id": "t1-i3d-f1",
+      "in_scope": true,
+      "paper_location": "Table I, I3D [6]",
+      "system": "I3D [6]",
+      "experiment_id": "table1-aslcitizen",
+      "split": "official train/val/test split, restricted to the 1500 most frequent glosses",
+      "metric_id": "f1",
+      "original_value": 0.7,
+      "copied_baseline": false,
+      "copied_baseline_note": "Cited to [6], but [6] (arXiv:2304.05934) reports I3D at 63.10% on the full 2731-class set and 74.16% on its WLASL-overlap subset; 71.10 / 90.13 / 0.70 appears nowhere in it. Treated as the authors' own run on their 1500-gloss subset, so in scope."
+    },
+    {
+      "target_id": "t1-iso-top1",
+      "in_scope": true,
+      "paper_location": "Table I, IsoSignVid2Aud",
+      "system": "IsoSignVid2Aud",
+      "experiment_id": "table1-aslcitizen",
+      "split": "official train/val/test split, restricted to the 1500 most frequent glosses",
+      "metric_id": "top1",
+      "original_value": 72.01,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t1-iso-top5",
+      "in_scope": true,
+      "paper_location": "Table I, IsoSignVid2Aud",
+      "system": "IsoSignVid2Aud",
+      "experiment_id": "table1-aslcitizen",
+      "split": "official train/val/test split, restricted to the 1500 most frequent glosses",
+      "metric_id": "top5",
+      "original_value": 91.42,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t1-iso-f1",
+      "in_scope": true,
+      "paper_location": "Table I, IsoSignVid2Aud",
+      "system": "IsoSignVid2Aud",
+      "experiment_id": "table1-aslcitizen",
+      "split": "official train/val/test split, restricted to the 1500 most frequent glosses",
+      "metric_id": "f1",
+      "original_value": 0.72,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t1-comb-top1",
+      "in_scope": true,
+      "paper_location": "Table I, Combined training",
+      "system": "Combined training",
+      "experiment_id": "table1-aslcitizen",
+      "split": "official train/val/test split, restricted to the 1500 most frequent glosses",
+      "metric_id": "top1",
+      "original_value": 75.19,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t1-comb-top5",
+      "in_scope": true,
+      "paper_location": "Table I, Combined training",
+      "system": "Combined training",
+      "experiment_id": "table1-aslcitizen",
+      "split": "official train/val/test split, restricted to the 1500 most frequent glosses",
+      "metric_id": "top5",
+      "original_value": 92.65,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t1-comb-f1",
+      "in_scope": true,
+      "paper_location": "Table I, Combined training",
+      "system": "Combined training",
+      "experiment_id": "table1-aslcitizen",
+      "split": "official train/val/test split, restricted to the 1500 most frequent glosses",
+      "metric_id": "f1",
+      "original_value": 0.75,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t2-iso-top1",
+      "in_scope": true,
+      "paper_location": "Table II, Ours (IsoSignVid2Aud)",
+      "system": "Ours (IsoSignVid2Aud)",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top1",
+      "original_value": 78.67,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t2-iso-top5",
+      "in_scope": true,
+      "paper_location": "Table II, Ours (IsoSignVid2Aud)",
+      "system": "Ours (IsoSignVid2Aud)",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top5",
+      "original_value": 94.96,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t2-comb-top1",
+      "in_scope": true,
+      "paper_location": "Table II, Ours (Combined training)",
+      "system": "Ours (Combined training)",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top1",
+      "original_value": 77.72,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t2-comb-top5",
+      "in_scope": true,
+      "paper_location": "Table II, Ours (Combined training)",
+      "system": "Ours (Combined training)",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top5",
+      "original_value": 95.32,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t2-unisign-top1",
+      "in_scope": false,
+      "paper_location": "Table II, UniSign [10]",
+      "system": "UniSign [10]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top1",
+      "original_value": 92.25,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [10]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [10]."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-siformer-top1",
+      "in_scope": false,
+      "paper_location": "Table II, SiFormer [11]",
+      "system": "SiFormer [11]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top1",
+      "original_value": 86.5,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [11]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [11]."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-signbert-top1",
+      "in_scope": false,
+      "paper_location": "Table II, SignBERT [9]",
+      "system": "SignBERT [9]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top1",
+      "original_value": 83.3,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [9]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [9]."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-signbert-top5",
+      "in_scope": false,
+      "paper_location": "Table II, SignBERT [9]",
+      "system": "SignBERT [9]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top5",
+      "original_value": 95.0,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [9]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [9]."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-i3d-st-gcn-top1",
+      "in_scope": false,
+      "paper_location": "Table II, I3D, ST-GCN [19]",
+      "system": "I3D, ST-GCN [19]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top1",
+      "original_value": 81.38,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [19]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [19].",
+          "Verified: WLASL [18] (arXiv:1910.11006) reports I3D 65.89 / 84.11 on WLASL100. Table II attributes it to [4], the original I3D paper, which predates WLASL."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-i3d-st-gcn-top5",
+      "in_scope": false,
+      "paper_location": "Table II, I3D, ST-GCN [19]",
+      "system": "I3D, ST-GCN [19]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top5",
+      "original_value": 94.13,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [19]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [19].",
+          "Verified: WLASL [18] (arXiv:1910.11006) reports I3D 65.89 / 84.11 on WLASL100. Table II attributes it to [4], the original I3D paper, which predates WLASL."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-stepnet-top1",
+      "in_scope": false,
+      "paper_location": "Table II, StepNet [26]",
+      "system": "StepNet [26]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top1",
+      "original_value": 78.29,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [26]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [26]."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-stepnet-top5",
+      "in_scope": false,
+      "paper_location": "Table II, StepNet [26]",
+      "system": "StepNet [26]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top5",
+      "original_value": 92.25,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [26]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [26]."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-i3d-top1",
+      "in_scope": false,
+      "paper_location": "Table II, I3D [4]",
+      "system": "I3D [4]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top1",
+      "original_value": 65.89,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [4]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [4].",
+          "Verified: WLASL [18] (arXiv:1910.11006) reports I3D 65.89 / 84.11 on WLASL100. Table II attributes it to [4], the original I3D paper, which predates WLASL."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-i3d-top5",
+      "in_scope": false,
+      "paper_location": "Table II, I3D [4]",
+      "system": "I3D [4]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top5",
+      "original_value": 84.11,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [4]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [4].",
+          "Verified: WLASL [18] (arXiv:1910.11006) reports I3D 65.89 / 84.11 on WLASL100. Table II attributes it to [4], the original I3D paper, which predates WLASL."
+        ]
+      }
+    },
+    {
+      "target_id": "t2-spoter-top1",
+      "in_scope": false,
+      "paper_location": "Table II, Spoter [1]",
+      "system": "Spoter [1]",
+      "experiment_id": "table2-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "top1",
+      "original_value": 63.18,
+      "copied_baseline": true,
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "copied_baseline",
+          "detail": "Cited comparison method [1]; not this paper's result."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [],
+        "evidence": [
+          "Table II attributes this row to [1]."
+        ]
+      }
+    },
+    {
+      "target_id": "t3-iso-pesq",
+      "in_scope": true,
+      "paper_location": "Table III, IsoSignVid2Aud",
+      "system": "IsoSignVid2Aud",
+      "experiment_id": "table3-audio-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "pesq",
+      "original_value": 2.68,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t3-iso-stoi",
+      "in_scope": true,
+      "paper_location": "Table III, IsoSignVid2Aud",
+      "system": "IsoSignVid2Aud",
+      "experiment_id": "table3-audio-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "stoi",
+      "original_value": 0.73,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t3-iso-snr",
+      "in_scope": true,
+      "paper_location": "Table III, IsoSignVid2Aud",
+      "system": "IsoSignVid2Aud",
+      "experiment_id": "table3-audio-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "snr",
+      "original_value": 14.79,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t3-iso-spec-error",
+      "in_scope": true,
+      "paper_location": "Table III, IsoSignVid2Aud",
+      "system": "IsoSignVid2Aud",
+      "experiment_id": "table3-audio-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "spec-error",
+      "original_value": 1.4,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t3-comb-pesq",
+      "in_scope": true,
+      "paper_location": "Table III, Combined training",
+      "system": "Combined training",
+      "experiment_id": "table3-audio-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "pesq",
+      "original_value": 2.44,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t3-comb-stoi",
+      "in_scope": true,
+      "paper_location": "Table III, Combined training",
+      "system": "Combined training",
+      "experiment_id": "table3-audio-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "stoi",
+      "original_value": 0.78,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t3-comb-snr",
+      "in_scope": true,
+      "paper_location": "Table III, Combined training",
+      "system": "Combined training",
+      "experiment_id": "table3-audio-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "snr",
+      "original_value": 15.5,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "t3-comb-spec-error",
+      "in_scope": true,
+      "paper_location": "Table III, Combined training",
+      "system": "Combined training",
+      "experiment_id": "table3-audio-wlasl100",
+      "split": "official WLASL-100 train/val/test split",
+      "metric_id": "spec-error",
+      "original_value": 0.16,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "seq-wer",
+      "in_scope": true,
+      "paper_location": "§V.A, sequence experiment",
+      "system": "IsoSignVid2Aud (variant not stated)",
+      "experiment_id": "sequence-aslcitizen",
+      "split": "synthetic sequences from ASL Citizen, 100 participants sampled with replacement",
+      "metric_id": "wer",
+      "original_value": 0.3,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "seq-cer",
+      "in_scope": true,
+      "paper_location": "§V.A, sequence experiment",
+      "system": "IsoSignVid2Aud (variant not stated)",
+      "experiment_id": "sequence-aslcitizen",
+      "split": "synthetic sequences from ASL Citizen, 100 participants sampled with replacement",
+      "metric_id": "cer",
+      "original_value": 0.2733,
+      "copied_baseline": false
+    },
+    {
+      "target_id": "seq-bleu",
+      "in_scope": true,
+      "paper_location": "§V.A, sequence experiment",
+      "system": "IsoSignVid2Aud (variant not stated)",
+      "experiment_id": "sequence-aslcitizen",
+      "split": "synthetic sequences from ASL Citizen, 100 participants sampled with replacement",
+      "metric_id": "bleu",
+      "original_value": 0.7036,
+      "copied_baseline": false
+    }
+  ],
   "runs": [],
   "artifacts": [],
-  "gates": []
+  "gates": [
+    {
+      "gate_id": "scope-what-to-reproduce",
+      "type": "target",
+      "status": "resolved",
+      "reason": "The export gives what_to_reproduce as \"TABLE I and TABLE II (and TABLE III? then other metrics and human evaluation?)\", leaving the reviewer's own question open. The assignee resolved it on 2026-10-01 to three experiments: isolated sign recognition (Tables I and II), audio generation (Table III), and the sequence experiment reported in §V.A prose. The paper contains no human evaluation.",
+      "evidence": [
+        "Export what_to_reproduce field.",
+        "Paper full text: no human evaluation, MOS, or listener study."
+      ],
+      "required_action": "None."
+    },
+    {
+      "gate_id": "table3-mse-definition",
+      "type": "protocol",
+      "status": "resolved",
+      "reason": "Table III's MSE column is produced by code that computes neither MSE nor an average. models/transformer/test.py line 221 evaluates np.mean(np.sqrt((gen - tgt) ** 2)), which is mean absolute error, and assigns it rather than appending it, so the reported figure is the error of the final test sample only. Running the code as published reproduces that quantity; correcting it changes what the published number measures.",
+      "evidence": [
+        "models/transformer/test.py at d4777cfd, lines 186 and 221: metrics['mse'] is initialised as a list and then overwritten with a scalar inside the per-sample loop, while pesq, stoi, snr, mcd and sc are appended.",
+        "Table III: MSE 1.4 for IsoSignVid2Aud and 0.16 for combined training."
+      ],
+      "required_action": "Resolved by the assignee on 2026-10-01: run both. The as-published single-sample MAE is the reproduction of the Table III target; the corrected, averaged MSE is reported alongside as a diagnostic and does not stand in for the target.",
+      "alternatives": [
+        {
+          "alternative_id": "as-published",
+          "description": "Run the code unchanged and report its single-sample MAE.",
+          "paper_evidence": "This is what produced Table III.",
+          "decision_needed": "Accept a target that is not the metric its label names."
+        },
+        {
+          "alternative_id": "corrected",
+          "description": "Append per sample and compute true mean squared error over the test set.",
+          "paper_evidence": "Matches the label \"MSE\" and §IV.J's definition.",
+          "decision_needed": "Accept a behaviour-changing patch to the published metric."
+        }
+      ]
+    },
+    {
+      "gate_id": "sequence-experiment-protocol",
+      "type": "target",
+      "status": "open",
+      "reason": "The sequence experiment cannot be specified from the paper. It does not say which trained variant produced WER 0.3000, CER 0.2733, and BLEU 0.7036; it samples 100 participants with replacement with no seed; and its NMS parameters disagree with the code. §IV.I states a window of 50 frames and hop length 3, while config.yaml sets win_size 45, hop_length 5, overlap 5. The assignee will try both variants when this experiment is reached, and judge then whether the guesses required exceed what counts as a reproduction.",
+      "evidence": [
+        "§V.A: the sequence paragraph names no variant and reports only averages.",
+        "§IV.I: \"window size of 50 frames with a hop length of 3 and a confidence threshold of 0.7\".",
+        "config.yaml at d4777cfd, pipeline.nms: win_size 45, hop_length 5, overlap 5, threshold 0.7.",
+        "test.py: participants drawn by random sampling with no fixed seed."
+      ],
+      "required_action": "Decide when the sequence experiment is reached; deferred by the assignee.",
+      "alternatives": [
+        {
+          "alternative_id": "standalone",
+          "description": "Run the pipeline with the sequentially trained IsoSignVid2Aud model.",
+          "paper_evidence": "§IV.H calls sequential training \"our current approach\".",
+          "decision_needed": "Whether this is the variant the paper reports."
+        },
+        {
+          "alternative_id": "combined",
+          "description": "Run the pipeline with the jointly trained model.",
+          "paper_evidence": "Not ruled out by the text.",
+          "decision_needed": "Whether this is the variant the paper reports."
+        }
+      ]
+    }
+  ]
 }
