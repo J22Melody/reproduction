@@ -1,0 +1,266 @@
+{
+  "agents": [
+    {
+      "agent_id": "reproduction-agent",
+      "model": "Claude Opus 5 (1M context)",
+      "model_id": "claude-opus-5[1m]",
+      "harness": "Claude Code",
+      "harness_version": "2.1.12",
+      "scope": "Assignment establishment only so far; no targets resolved and no experiment run.",
+      "evidence": [
+        "Live session identity reported by the running harness on 2026-10-01: model name \"Opus 5 (1M context)\", exact model id \"claude-opus-5[1m]\".",
+        "harness_version is the Claude Code version on the executing machine; the session runs through its VS Code extension."
+      ]
+    }
+  ],
+  "paper_id": "2a405db768a0610bb3c9d6e8806bd44024d8c13c",
+  "assignment": {
+    "kind": "direct_user_request",
+    "source": {
+      "path": "/Users/zifanjiang/Downloads/papers-2a405db768a0610bb3c9d6e8806bd44024d8c13c-2026-10-01.json",
+      "sha256": "5d0cd3202d7a5d9be0aa4dc33ec0e7791a81149a7b4b6a244bb5f6a9879161da"
+    },
+    "normalized": {
+      "title": "IsoSignVid2Aud: Sign Language Video to Audio Conversion Without Text Intermediaries",
+      "year": 2025,
+      "venue": "International Conference on AI-ML-Systems (AIMLSystems)",
+      "pdf_url": "https://arxiv.org/abs/2510.07837",
+      "code_repos": [
+        "https://github.com/Kugelblitz25/IsoSignVid2Aud",
+        "https://github.com/BheeshmSharma/IsoSignVid2Aud_AIMLsystems-2025"
+      ],
+      "what_to_reproduce": "TABLE I and TABLE II \n(and TABLE III? then other metrics and human evaluation?)",
+      "metric_ids": [
+        "wzc6kxyuhls6lut",
+        "qmajh31r87f5x7e",
+        "398630tq0zlaufq"
+      ],
+      "metric_records": [
+        {
+          "collectionId": "pbc_3017397517",
+          "collectionName": "metrics",
+          "comments": "",
+          "id": "wzc6kxyuhls6lut",
+          "name": "Accuracy",
+          "url": []
+        },
+        {
+          "collectionId": "pbc_3017397517",
+          "collectionName": "metrics",
+          "comments": "",
+          "id": "qmajh31r87f5x7e",
+          "name": "top-5 accuracy",
+          "url": null
+        },
+        {
+          "collectionId": "pbc_3017397517",
+          "collectionName": "metrics",
+          "comments": "",
+          "id": "398630tq0zlaufq",
+          "name": "F1",
+          "url": []
+        }
+      ],
+      "datasets": [
+        {
+          "id": "d65lpm4j28zrncz",
+          "name": "ASL Citizen",
+          "available": "yes",
+          "license": "custom Microsoft research license",
+          "urls": [
+            "https://www.microsoft.com/en-us/research/project/asl-citizen/",
+            "https://www.microsoft.com/en-us/download/details.aspx?id=105253",
+            "https://www.microsoft.com/en-us/research/project/asl-citizen/dataset-license/"
+          ],
+          "comments": "A Community-sourced Dataset for Advancing Isolated Sign Language Recognition containing about 84k videos of 2.7k distinct signs from American Sign Language (ASL)"
+        },
+        {
+          "id": "j3969iwym0kepl7",
+          "name": "WLASL",
+          "available": "yes",
+          "license": "Custom (research only)",
+          "urls": [
+            "https://dxli94.github.io/WLASL/"
+          ],
+          "comments": "Word-Level American Sign Language, 2000 glosses"
+        }
+      ],
+      "copied_scores": "yes",
+      "compute_requirements": "4 worker\nthreads on a dedicated CUDA device.\n Training was performed on a single NVIDIA RTX A6000 GPU with 48GB of\nmemory.",
+      "includes_human_evaluation": "no",
+      "potential_ethical_concerns": "no",
+      "comments": "No link found in the abstract under \"Code is\navailable at: this link.\" !\n\nSubsets of \"two standard\ndatasets: ASL-Citizen-1500 and WLASL-100\"\nWe conducted our experiments on a subset of 1500\nof the most frequent glosses of the ASL-Citizen dataset, which\noriginally consists of around 2731 sign language words. \nWe then performed\nexperiments on a subset of the 100 most frequent glosses\nof the WLASL dataset, which originally consists of around\n2000 signs.",
+      "flag_reason": ""
+    },
+    "record": {
+      "area_of_slp": [
+        "Translation",
+        "Recognition"
+      ],
+      "code_repos": "N/A",
+      "collectionId": "pbc_3632733556",
+      "collectionName": "papers",
+      "comments": "No link found in the abstract under \"Code is\navailable at: this link.\" !\n\nSubsets of \"two standard\ndatasets: ASL-Citizen-1500 and WLASL-100\"\nWe conducted our experiments on a subset of 1500\nof the most frequent glosses of the ASL-Citizen dataset, which\noriginally consists of around 2731 sign language words. \nWe then performed\nexperiments on a subset of the 100 most frequent glosses\nof the WLASL dataset, which originally consists of around\n2000 signs.",
+      "compute_requirements": "4 worker\nthreads on a dedicated CUDA device.\n Training was performed on a single NVIDIA RTX A6000 GPU with 48GB of\nmemory.",
+      "copied_scores": "yes",
+      "datasets": [
+        "d65lpm4j28zrncz",
+        "j3969iwym0kepl7"
+      ],
+      "expand": {
+        "datasets": [
+          {
+            "assignees": [],
+            "available": "yes",
+            "collectionId": "pbc_3710182791",
+            "collectionName": "datasets",
+            "comments": "A Community-sourced Dataset for Advancing Isolated Sign Language Recognition containing about 84k videos of 2.7k distinct signs from American Sign Language (ASL)",
+            "contact_dates": [],
+            "correspondence": "",
+            "id": "d65lpm4j28zrncz",
+            "license": "custom Microsoft research license",
+            "name": "ASL Citizen",
+            "on_modal": "yes",
+            "permission_model_weights": "",
+            "permission_to_reproduce": "",
+            "signed_languages": [],
+            "spoken_languages": [],
+            "url": [
+              "https://www.microsoft.com/en-us/research/project/asl-citizen/",
+              "https://www.microsoft.com/en-us/download/details.aspx?id=105253",
+              "https://www.microsoft.com/en-us/research/project/asl-citizen/dataset-license/"
+            ]
+          },
+          {
+            "assignees": [],
+            "available": "yes",
+            "collectionId": "pbc_3710182791",
+            "collectionName": "datasets",
+            "comments": "Word-Level American Sign Language, 2000 glosses",
+            "contact_dates": [],
+            "correspondence": "",
+            "id": "j3969iwym0kepl7",
+            "license": "Custom (research only)",
+            "name": "WLASL",
+            "on_modal": "yes",
+            "permission_model_weights": "",
+            "permission_to_reproduce": "",
+            "signed_languages": [
+              "ase"
+            ],
+            "spoken_languages": [
+              "eng"
+            ],
+            "url": [
+              "https://dxli94.github.io/WLASL/"
+            ]
+          }
+        ],
+        "metrics": [
+          {
+            "collectionId": "pbc_3017397517",
+            "collectionName": "metrics",
+            "comments": "",
+            "id": "wzc6kxyuhls6lut",
+            "name": "Accuracy",
+            "url": []
+          },
+          {
+            "collectionId": "pbc_3017397517",
+            "collectionName": "metrics",
+            "comments": "",
+            "id": "qmajh31r87f5x7e",
+            "name": "top-5 accuracy",
+            "url": null
+          },
+          {
+            "collectionId": "pbc_3017397517",
+            "collectionName": "metrics",
+            "comments": "",
+            "id": "398630tq0zlaufq",
+            "name": "F1",
+            "url": []
+          }
+        ]
+      },
+      "finalized_by": "joni.dambre@gmail.com",
+      "flag_reason": "",
+      "id": "8revhmfjcq23pdf",
+      "includes_human_evaluation": "no",
+      "main_experiment_has_ranking": "yes",
+      "metrics": [
+        "wzc6kxyuhls6lut",
+        "qmajh31r87f5x7e",
+        "398630tq0zlaufq"
+      ],
+      "paper_id": "2a405db768a0610bb3c9d6e8806bd44024d8c13c",
+      "pdf_url": "https://arxiv.org/abs/2510.07837",
+      "peer_reviewed": "yes",
+      "potential_ethical_concerns": "no",
+      "rejection_reason": "",
+      "status": "final",
+      "status_history": [
+        {
+          "after": "final",
+          "before": "needs_review",
+          "by": "goehring@cl.uzh.ch",
+          "when": "2026-08-18T12:45:22.454Z"
+        }
+      ],
+      "sub_area_of_slp": [
+        "Video-to-speech",
+        "Isolated signing videos"
+      ],
+      "textual_conclusion": "Experimental\nresults demonstrate competitive performance on ASL-Citizen1500 and WLASL-100 datasets with Top-1 accuracies of 72.01%\nand 78.67%, respectively, and audio quality metrics (PESQ:\n2.67, STOI: 0.73) indicating intelligible speech output. \n\nIsoSignVid2Aud achieves a Top-1 accuracy of 72.01% and\na Top-5 accuracy of 91.42%, which is a slight improvement upon the baseline I3D model by 0.91% and 1.29%,\nrespectively. Our model also provides an F1 score of 0.72,\ndemonstrating its effectiveness in recognizing ASL signs with\nboth precision and recall. When trained with the combined\napproach, IsoSignVid2Aud achieves even better results with a\nTop-1 accuracy of 75.19%, Top-5 accuracy of 92.65%, and an\nF1-Score of 0.75. \n\nOur IsoSignVid2Aud model achieves a Top1 accuracy of 78.67%, outperforming I3D (65.89%), and\nSpoter (63.18%) and achieving a slight improvement over\nStepNet (78.29%). With the combined training approach,\nIsoSignVid2Aud reaches a Top-1 accuracy of 77.72%, which is\nslightly lower than the standalone model but still competitive.\nHowever, it achieves the highest Top-5 accuracy among all\nmodels at 95.32%, even surpassing SignBERT (95.00%) and\nI3D with ST-GCN (94.13%). While UniSign maintains the\nhighest Top-1 accuracy at 92.25%, both of our models demonstrate competitive performance in the broader Top-5 metric.",
+      "title": "IsoSignVid2Aud: Sign Language Video to Audio Conversion Without Text Intermediaries",
+      "venue": "International Conference on AI-ML-Systems (AIMLSystems)",
+      "what_to_reproduce": "TABLE I and TABLE II \n(and TABLE III? then other metrics and human evaluation?)",
+      "year": 2025
+    },
+    "record_note": "Single-record export supplied by the assignee on 2026-10-01. assignment.kind is direct_user_request rather than queue_record because the export is a bare object rather than the array ingest_candidate.py expects, and carries no confirmation field; status is final, set by goehring@cl.uzh.ch on 2026-08-18. Same shape as papers/sivamohan-2024-isl-cnn.\n\nassignment.record is preserved verbatim. One field is corrected in assignment.normalized: the record gives code_repos as \"N/A\" and its comments say \"No link found in the abstract under 'Code is available at: this link.'\", but the arXiv abstract page does carry the link. It renders as the text \"this https URL\", so it is invisible when the abstract is read as plain text. normalized.code_repos therefore lists the two repositories found on 2026-10-01. The assignee has asked Team S to correct the portal record."
+  },
+  "paper": {
+    "title": "IsoSignVid2Aud: Sign Language Video to Audio Conversion Without Text Intermediaries",
+    "citation": "Kavediya, H.; Nayak, V.; Sharma, B.; Palaniappan, B. IsoSignVid2Aud: Sign Language Video to Audio Conversion without Text Intermediaries. arXiv:2510.07837, 2025. Presented at the International Conference on AI-ML-Systems (AIMLSystems), 2025.",
+    "url": "https://arxiv.org/abs/2510.07837",
+    "pdf_sha256": null,
+    "accessed_at": "2026-10-01"
+  },
+  "sources": [
+    {
+      "source_id": "paper-arxiv",
+      "kind": "paper",
+      "url": "https://arxiv.org/abs/2510.07837",
+      "revision_or_sha256": "not yet pinned",
+      "role": "Target values and disclosed protocol."
+    },
+    {
+      "source_id": "published-code",
+      "kind": "code",
+      "url": "https://github.com/Kugelblitz25/IsoSignVid2Aud",
+      "revision_or_sha256": "d4777cfdf41a24bc8c22a41c6d075ebc470c60f0",
+      "role": "Official implementation named by the paper. Apache-2.0, 36 files on branch master covering the extractor, transformer, generator, NMS, training, inference, and config. Not yet read or run."
+    },
+    {
+      "source_id": "author-pointer-repo",
+      "kind": "code",
+      "url": "https://github.com/BheeshmSharma/IsoSignVid2Aud_AIMLsystems-2025",
+      "revision_or_sha256": "190e51430cab",
+      "role": "The repository the arXiv abstract links to. Contains only a README that forwards to the implementation above and to a project page; no code of its own."
+    }
+  ],
+  "status": {
+    "pipeline": null,
+    "numerical_agreement": null,
+    "numerical_agreement_basis": null,
+    "preference_level": null,
+    "blocker": null
+  },
+  "datasets": [],
+  "metric_definitions": [],
+  "experiments": [],
+  "targets": [],
+  "runs": [],
+  "artifacts": [],
+  "gates": []
+}
