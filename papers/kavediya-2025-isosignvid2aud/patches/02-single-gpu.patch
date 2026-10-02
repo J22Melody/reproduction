@@ -1,0 +1,32 @@
+Use the first visible GPU instead of a hardcoded second one.
+
+models/extractor/train.py and models/train.py select torch.device("cuda:1"),
+which fails on a single-GPU machine. Every other entry point uses "cuda".
+Containerization only; no behavioural change.
+
+diff --git a/models/extractor/train.py b/models/extractor/train.py
+index fd0589a..aaed424 100644
+--- a/models/extractor/train.py
++++ b/models/extractor/train.py
+@@ -173,7 +173,7 @@ if __name__ == "__main__":
+         },
+     )
+ 
+-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
++    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+ 
+     logger.debug(f"Num Classes: {config.n_words}")
+ 
+diff --git a/models/train.py b/models/train.py
+index 0b6be08..b6fc080 100644
+--- a/models/train.py
++++ b/models/train.py
+@@ -281,7 +281,7 @@ if __name__ == "__main__":
+         }
+     )
+ 
+-    device = torch.device("cuda:1" if torch.cuda.is_available() else "cpu")
++    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+ 
+     train_data = create_subset(config.data.processed.csvs.train, config.n_words)
+     val_data = create_subset(config.data.processed.csvs.val, config.n_words)

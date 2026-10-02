@@ -1,0 +1,84 @@
+Decode combined-training clips with PyAV directly, producing identical tensors.
+
+S2S_Dataset (models/train.py) reads every clip through pytorchvideo's
+EncodedVideo.get_clip(0, video.duration), with the same per-clip overhead
+patch 04 removes for WLASLDataset. This extends decode_clip to end_sec=None,
+computing video.duration by pytorchvideo's own rule (the longer header
+duration of the video and audio streams, else the last decoded frame), and
+uses it in S2S_Dataset. Verified bit-identical before use (see README).
+
+diff --git a/models/dataset.py b/models/dataset.py
+index 58d5ddb..47575cf 100644
+--- a/models/dataset.py
++++ b/models/dataset.py
+@@ -7,7 +7,7 @@ import torch
+ from pytorchvideo.data.encoded_video import EncodedVideo
+ from torch.utils.data import Dataset
+ 
+-from models.extractor.dataset import crop_size, num_frames, transform
++from models.extractor.dataset import crop_size, decode_clip, num_frames, transform
+ 
+ 
+ class S2S_Dataset(Dataset):
+@@ -59,9 +59,7 @@ class S2S_Dataset(Dataset):
+         label = self.class_to_idx[gloss]
+ 
+         try:
+-            video = EncodedVideo.from_path(video_path)
+-            video_data = video.get_clip(start_sec=0, end_sec=video.duration)
+-            video_data = self.transform(video_data)
++            video_data = self.transform({"video": decode_clip(video_path, None)})
+             video_tensor = video_data["video"]
+             spectrogram = torch.tensor(self.spectrograms[gloss], dtype=torch.float32)
+ 
+diff --git a/models/extractor/dataset.py b/models/extractor/dataset.py
+index ea8ff27..3e30018 100644
+--- a/models/extractor/dataset.py
++++ b/models/extractor/dataset.py
+@@ -44,13 +44,16 @@ transform = ApplyTransformToKey(
+ )
+ 
+ 
+-def decode_clip(video_path: str | Path, end_sec: float) -> torch.Tensor:
++def decode_clip(video_path: str | Path, end_sec: float | None) -> torch.Tensor:
+     """Same tensor as EncodedVideo.from_path(video_path).get_clip(0, end_sec)["video"],
+-    decoded by the same PyAV/FFmpeg without pytorchvideo's per-frame overhead."""
++    decoded by the same PyAV/FFmpeg without pytorchvideo's per-frame overhead.
++    end_sec=None means pytorchvideo's video.duration."""
+     with av.open(str(video_path)) as container:
+         stream = container.streams.video[0]
+         start = stream.start_time if stream.start_time is not None else 0.0
+         start_pts = secs_to_pts(0, stream.time_base, start, round_mode="ceil")
++        if end_sec is None:
++            end_sec = _pytorchvideo_duration(container, video_path)
+         end_pts = secs_to_pts(end_sec, stream.time_base, start, round_mode="ceil")
+         frames = {}
+         for frame in container.decode(video=0):
+@@ -64,6 +67,27 @@ def decode_clip(video_path: str | Path, end_sec: float) -> torch.Tensor:
+     return torch.from_numpy(video).permute(3, 0, 1, 2).to(torch.float32)
+ 
+ 
++def _pytorchvideo_duration(container, video_path) -> float:
++    """EncodedVideoPyAV.duration: the longer of the video and audio stream durations from the
++    header, or the last decoded video frame's time when neither header gives one."""
++    from pytorchvideo.data.utils import pts_to_secs
++
++    video = container.streams.video[0]
++    video_start = video.start_time if video.start_time is not None else 0.0
++    durations = []
++    if video.duration is not None:
++        durations.append(pts_to_secs(video.duration, video.time_base, video_start))
++    if container.streams.audio and container.streams.audio[0].duration is not None:
++        audio = container.streams.audio[0]
++        audio_start = audio.start_time if audio.start_time is not None else 0.0
++        durations.append(pts_to_secs(audio.duration, audio.time_base, audio_start))
++    if durations:
++        return max(durations)
++    with av.open(str(video_path)) as again:
++        last = max(frame.pts for frame in again.decode(video=0))
++    return pts_to_secs(last, video.time_base, video_start)
++
++
+ class WLASLDataset(Dataset):
+     def __init__(self, videos_csv: str | Path, video_dir: str | Path) -> None:
+         self.data = pd.read_csv(videos_csv)

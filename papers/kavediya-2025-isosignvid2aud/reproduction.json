@@ -1027,8 +1027,247 @@
       "copied_baseline": false
     }
   ],
-  "runs": [],
-  "artifacts": [],
+  "runs": [
+    {
+      "run_id": "specgen-aslc1500",
+      "kind": "preprocessing",
+      "agent_ids": [
+        "reproduction-agent-opus-5-5"
+      ],
+      "command": "modal run papers/kavediya-2025-isosignvid2aud/modal_app.py::spec_gen",
+      "exit_code": 0,
+      "started_at_utc": "2026-10-01T18:39:00Z",
+      "finished_at_utc": "2026-10-01T18:57:00Z",
+      "recording": {
+        "mode": "contemporaneous",
+        "source_record_sha256": null,
+        "unknown_fields": []
+      },
+      "attempt": {
+        "group_id": "specgen-aslc1500",
+        "number": 1,
+        "max_attempts": 1
+      },
+      "stop_policy": {
+        "declared_at_utc": "2026-10-01T18:38:00Z",
+        "max_wall_time_seconds": 21600,
+        "max_gpu_hours": null,
+        "max_cost_chf": null
+      },
+      "terminal": {
+        "state": "succeeded",
+        "reason_code": "completed",
+        "detail": "spec_gen.py wrote spectrograms for 1,500 glosses in 1,065.6 s.",
+        "failure_class": null,
+        "retry_decision": "not_needed",
+        "gate_ids": []
+      },
+      "compute": {
+        "platform": "modal",
+        "modal_profile": "repro-sign",
+        "modal_app_id": "ap-vWPdo1rJS44JHooAhhwHAP",
+        "modal_function_call_id": null,
+        "gpu_count": 0,
+        "shared_cache": {
+          "modal_volume": "huggingface-cache",
+          "mount_path": "/cache/huggingface",
+          "environment": {
+            "HF_HOME": "/cache/huggingface",
+            "HF_HUB_CACHE": "/cache/huggingface/hub",
+            "TORCH_HOME": "/cache/huggingface/torch"
+          }
+        },
+        "dashboard": "https://modal.com/apps/repro-sign/main/ap-vWPdo1rJS44JHooAhhwHAP"
+      },
+      "artifact_ids": [
+        "aslc1500-specs"
+      ]
+    },
+    {
+      "run_id": "prepare-aslc1500",
+      "kind": "preprocessing",
+      "agent_ids": [
+        "reproduction-agent-opus-5-5"
+      ],
+      "command": "modal run --detach papers/kavediya-2025-isosignvid2aud/modal_app.py::prepare_aslc",
+      "exit_code": 0,
+      "started_at_utc": "2026-10-01T23:33:32Z",
+      "finished_at_utc": "2026-10-02T00:24:57Z",
+      "recording": {
+        "mode": "contemporaneous",
+        "source_record_sha256": null,
+        "unknown_fields": []
+      },
+      "attempt": {
+        "group_id": "prepare-aslc1500",
+        "number": 1,
+        "max_attempts": 1
+      },
+      "stop_policy": {
+        "declared_at_utc": "2026-10-01T23:33:00Z",
+        "max_wall_time_seconds": 43200,
+        "max_gpu_hours": null,
+        "max_cost_chf": 150.0
+      },
+      "terminal": {
+        "state": "succeeded",
+        "reason_code": "completed",
+        "detail": "verify.py over 32 gloss shards and augmentation.py over 96 row chunks, merged in upstream order; 0 of 96 augmentation shards failed. Earlier attempts under PyAV 18.1.0 are described under README dead ends and superseded.",
+        "failure_class": null,
+        "retry_decision": "not_needed",
+        "gate_ids": []
+      },
+      "compute": {
+        "platform": "modal",
+        "modal_profile": "repro-sign",
+        "modal_app_id": "ap-pp4aIG9tGEHp00voqbiV8i",
+        "modal_function_call_id": null,
+        "gpu_count": 0,
+        "shared_cache": {
+          "modal_volume": "huggingface-cache",
+          "mount_path": "/cache/huggingface",
+          "environment": {
+            "HF_HOME": "/cache/huggingface",
+            "HF_HUB_CACHE": "/cache/huggingface/hub",
+            "TORCH_HOME": "/cache/huggingface/torch"
+          }
+        },
+        "dashboard": "https://modal.com/apps/repro-sign/main/ap-pp4aIG9tGEHp00voqbiV8i"
+      },
+      "artifact_ids": [
+        "aslc1500-verified-train",
+        "aslc1500-verified-val",
+        "aslc1500-verified-test",
+        "aslc1500-augmented-train",
+        "aslc1500-augmented-val",
+        "aslc1500-augmented-test",
+        "prepare-record"
+      ]
+    },
+    {
+      "run_id": "decode-identity-aslc1500",
+      "kind": "representative_preflight",
+      "agent_ids": [
+        "reproduction-agent-opus-5-5"
+      ],
+      "command": "modal run papers/kavediya-2025-isosignvid2aud/modal_app.py::verify_decode_identity",
+      "exit_code": 0,
+      "started_at_utc": "2026-10-02T00:25:12Z",
+      "finished_at_utc": "2026-10-02T00:28:50Z",
+      "recording": {
+        "mode": "contemporaneous",
+        "source_record_sha256": null,
+        "unknown_fields": []
+      },
+      "attempt": {
+        "group_id": "decode-identity-aslc1500",
+        "number": 1,
+        "max_attempts": 1
+      },
+      "stop_policy": {
+        "declared_at_utc": "2026-10-02T00:25:00Z",
+        "max_wall_time_seconds": 3600,
+        "max_gpu_hours": null,
+        "max_cost_chf": 5.0
+      },
+      "terminal": {
+        "state": "succeeded",
+        "reason_code": "completed",
+        "detail": "Patches 04 and 05 produced identical tensors in all 3,000 checks.",
+        "failure_class": null,
+        "retry_decision": "not_needed",
+        "gate_ids": []
+      },
+      "compute": {
+        "platform": "modal",
+        "modal_profile": "repro-sign",
+        "modal_app_id": "ap-ita3jnvERisFrzIxJnLjKU",
+        "modal_function_call_id": null,
+        "gpu_count": 0,
+        "shared_cache": {
+          "modal_volume": "huggingface-cache",
+          "mount_path": "/cache/huggingface",
+          "environment": {
+            "HF_HOME": "/cache/huggingface",
+            "HF_HUB_CACHE": "/cache/huggingface/hub",
+            "TORCH_HOME": "/cache/huggingface/torch"
+          }
+        },
+        "dashboard": "https://modal.com/apps/repro-sign/main/ap-ita3jnvERisFrzIxJnLjKU"
+      },
+      "artifact_ids": [
+        "decode-identity"
+      ]
+    }
+  ],
+  "artifacts": [
+    {
+      "artifact_id": "aslc1500-verified-train",
+      "kind": "preprocessed_input",
+      "uri": "modal://repro-sign/volumes/kavediya-2025-isosignvid2aud-results/aslc1500/processed/verified_train.csv",
+      "sha256": "055b1014f534b3c817d780eeff0deb3682c06a3859768a0eca9925d57267e468",
+      "rows": 23365
+    },
+    {
+      "artifact_id": "aslc1500-verified-val",
+      "kind": "preprocessed_input",
+      "uri": "modal://repro-sign/volumes/kavediya-2025-isosignvid2aud-results/aslc1500/processed/verified_val.csv",
+      "sha256": "dc5b740863787506bd267d673dd17b0e42ed5efbe0c63c2ee0b48a03f56d6326",
+      "rows": 5232
+    },
+    {
+      "artifact_id": "aslc1500-verified-test",
+      "kind": "preprocessed_input",
+      "uri": "modal://repro-sign/volumes/kavediya-2025-isosignvid2aud-results/aslc1500/processed/verified_test.csv",
+      "sha256": "8a0cd1e3ded35f65198ce7d5d806af5c48229b5451b7eebb1617c69432dbfdd8",
+      "rows": 17892
+    },
+    {
+      "artifact_id": "aslc1500-augmented-train",
+      "kind": "preprocessed_input",
+      "uri": "modal://repro-sign/volumes/kavediya-2025-isosignvid2aud-results/aslc1500/processed/train.csv",
+      "sha256": "7d52b3f99b059cb5490788fc61322a1bb0c797bf4a814b8609232626fe971173",
+      "rows": 116825,
+      "note": "Five augmented copies per verified video, written to aslc1500/processed/videos/ (232,445 MP4s). Augmentation is unseeded upstream, so these files are not reproducible bit for bit."
+    },
+    {
+      "artifact_id": "aslc1500-augmented-val",
+      "kind": "preprocessed_input",
+      "uri": "modal://repro-sign/volumes/kavediya-2025-isosignvid2aud-results/aslc1500/processed/val.csv",
+      "sha256": "2b09402bc690893876242ced92053b746aa78b483ff2f38dfde7e5b115632728",
+      "rows": 26160,
+      "note": "Five augmented copies per verified video, written to aslc1500/processed/videos/ (232,445 MP4s). Augmentation is unseeded upstream, so these files are not reproducible bit for bit."
+    },
+    {
+      "artifact_id": "aslc1500-augmented-test",
+      "kind": "preprocessed_input",
+      "uri": "modal://repro-sign/volumes/kavediya-2025-isosignvid2aud-results/aslc1500/processed/test.csv",
+      "sha256": "f0e7a5f9e5d634dda36989d3bb92207e3983cf533503c54ee5253f2bdc85844a",
+      "rows": 89460,
+      "note": "Five augmented copies per verified video, written to aslc1500/processed/videos/ (232,445 MP4s). Augmentation is unseeded upstream, so these files are not reproducible bit for bit."
+    },
+    {
+      "artifact_id": "aslc1500-specs",
+      "kind": "preprocessed_input",
+      "uri": "modal://repro-sign/volumes/kavediya-2025-isosignvid2aud-results/aslc1500/processed/specs.csv",
+      "sha256": "7475ae5e8c9d7d60f10ac03b338cd5ca09f70591e93ab0db8d1685f5250af6b6",
+      "size_bytes": 3375547399,
+      "note": "gTTS (tld co.in) complex spectrograms, 1,500 glosses x 2 x 1025 x 64; 183 glosses truncated to 64 frames by spec_gen.py. gTTS is a network service, so a regeneration need not match this hash."
+    },
+    {
+      "artifact_id": "prepare-record",
+      "kind": "run_manifest",
+      "uri": "modal://repro-sign/volumes/kavediya-2025-isosignvid2aud-results/aslc1500/prepare.json",
+      "sha256": "6613e8914dbb61d6f60b9839d365eac8b1863376596ae079759780dead13542b"
+    },
+    {
+      "artifact_id": "decode-identity",
+      "kind": "raw_metrics",
+      "uri": "modal://repro-sign/volumes/kavediya-2025-isosignvid2aud-results/aslc1500/decode_identity.json",
+      "sha256": "ce67c5e37ab6fe74a3a401a0c1eab2910f156279d57628c044a4ec51d1fd8172",
+      "note": "Patches 04/05 vs pytorchvideo after the full transform: 0 mismatches in 1,000 augmented clips (each patch) and 1,000 raw videos."
+    }
+  ],
   "gates": [
     {
       "gate_id": "scope-what-to-reproduce",

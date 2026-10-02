@@ -1,0 +1,143 @@
+Save and restore exact training state after every epoch.
+
+Modal functions stop after 24 h, and a full ASL-Citizen-1500 extractor epoch
+takes ~3.6 h, so a run must survive restarts. The published trainers can only
+reload model weights (--weights_path), losing optimizer, scheduler,
+early-stopping and RNG state. This writes resume.pt after each completed epoch
+and restores all of it on start; an uninterrupted run is unchanged.
+
+diff --git a/models/extractor/train.py b/models/extractor/train.py
+diff --git a/models/extractor/train.py b/models/extractor/train.py
+index aaed424..dc4be31 100644
+--- a/models/extractor/train.py
++++ b/models/extractor/train.py
+@@ -12,7 +12,7 @@ from models.extractor.model import Extractor
+ from utils.common import create_path, create_subset, get_logger
+ from utils.config import ExtractorTraining as TrainConfig
+ from utils.config import load_config
+-from utils.model import EarlyStopping, load_model_weights, save_model
++from utils.model import EarlyStopping, load_model_weights, load_resume_state, save_model, save_resume_state
+ 
+ logger = get_logger("logs/extractor_training.log")
+ 
+@@ -136,8 +136,14 @@ class Trainer:
+         # Training
+         best_train_acc = 0.0
+         best_test_acc = 0.0
++        resume_path = self.checkpoint_path / "resume.pt"
++        start_epoch, extra = load_resume_state(
++            resume_path, self.model, [self.optimizer], [scheduler], early_stopping, self.device
++        )
++        if extra:
++            best_train_acc, best_test_acc = extra
+ 
+-        for epoch in range(self.train_config.epochs):
++        for epoch in range(start_epoch, self.train_config.epochs):
+             train_acc, train_loss = self.train_epoch(epoch)
+             val_acc, val_loss = self.validate()
+             scheduler.step(val_loss)
+@@ -157,6 +163,10 @@ class Trainer:
+                     f"Early stopping triggered. Stopping training with best_loss: {early_stopping.best_loss:.4f}."
+                 )
+                 break
++            save_resume_state(
++                resume_path, epoch, self.model, [self.optimizer], [scheduler], early_stopping,
++                (best_train_acc, best_test_acc),
++            )
+ 
+         # Save final model
+         self.save_model(val_loss, f"final_{self.model.base.name}.pt")
+diff --git a/models/train.py b/models/train.py
+index b6fc080..12ba018 100644
+--- a/models/train.py
++++ b/models/train.py
+@@ -12,7 +12,7 @@ from models.model import S2S_Model
+ from models.transformer.train import complex_loss
+ from utils.common import create_path, create_subset, get_logger
+ from utils.config import Combined, ExtractorTraining, TransformerTraining, load_config
+-from utils.model import EarlyStopping, load_model_weights, save_model
++from utils.model import EarlyStopping, load_model_weights, load_resume_state, save_model, save_resume_state
+ 
+ logger = get_logger("logs/combined_training.log")
+ 
+@@ -212,8 +212,16 @@ class Trainer:
+         logger.info("Starting training...")
+ 
+         best_val_acc = 0.0
++        resume_path = self.checkpoint_path / "resume.pt"
++        optimizers = [self.optimizer.extractor_optimizer, self.optimizer.transformer_optimizer]
++        schedulers = [self.scheduler.extractor_scheduler, self.scheduler.transformer_scheduler]
++        start_epoch, extra = load_resume_state(
++            resume_path, self.model, optimizers, schedulers, early_stopping, self.device
++        )
++        if extra:
++            best_val_acc = extra
+ 
+-        for epoch in range(self.train_cfg.epochs):
++        for epoch in range(start_epoch, self.train_cfg.epochs):
+             train_loss, train_acc = self.train_epoch(epoch)
+             val_loss, val_acc = self.validate()
+ 
+@@ -244,6 +252,9 @@ class Trainer:
+             if early_stopping.early_stop:
+                 logger.info("Early stopping triggered.")
+                 break
++            save_resume_state(
++                resume_path, epoch, self.model, optimizers, schedulers, early_stopping, best_val_acc
++            )
+ 
+         logger.info(f"Training complete. Best val accuracy: {best_val_acc:.2f}")
+ 
+diff --git a/utils/model.py b/utils/model.py
+index 32894d1..7160848 100644
+--- a/utils/model.py
++++ b/utils/model.py
+@@ -1,6 +1,8 @@
+ import logging
++import random
+ from pathlib import Path
+ 
++import numpy as np
+ import torch
+ 
+ from utils.common import create_path
+@@ -52,3 +54,39 @@ def load_model_weights(
+         "model_state_dict"
+     ]
+     model.load_state_dict(weights)
++
++
++def save_resume_state(path, epoch, model, optimizers, schedulers, early_stopping, extra) -> None:
++    state = {
++        "epoch": epoch,
++        "model": model.state_dict(),
++        "optimizers": [o.state_dict() for o in optimizers],
++        "schedulers": [s.state_dict() for s in schedulers],
++        "early_stopping": dict(vars(early_stopping)),
++        "extra": extra,
++        "rng": (torch.get_rng_state(), torch.cuda.get_rng_state_all(), random.getstate(), np.random.get_state()),
++    }
++    tmp = Path(str(path) + ".tmp")
++    torch.save(state, tmp)
++    tmp.replace(path)
++
++
++def load_resume_state(path, model, optimizers, schedulers, early_stopping, device):
++    """Restore the state saved after the last finished epoch; return (next epoch, extra)."""
++    if not Path(path).exists():
++        return 0, None
++    # RNG states must stay on the CPU; load_state_dict moves weights and optimizer state.
++    state = torch.load(path, weights_only=False, map_location="cpu")
++    model.load_state_dict(state["model"])
++    for o, s in zip(optimizers, state["optimizers"]):
++        o.load_state_dict(s)
++    for sch, s in zip(schedulers, state["schedulers"]):
++        sch.load_state_dict(s)
++    vars(early_stopping).update(state["early_stopping"])
++    torch_rng, cuda_rng, python_rng, numpy_rng = state["rng"]
++    torch.set_rng_state(torch_rng)
++    torch.cuda.set_rng_state_all(cuda_rng)
++    random.setstate(python_rng)
++    np.random.set_state(numpy_rng)
++    logging.info(f"Resumed from {path} after epoch {state['epoch'] + 1}")
++    return state["epoch"] + 1, state["extra"]

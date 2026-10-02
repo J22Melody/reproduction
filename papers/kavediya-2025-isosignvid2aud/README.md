@@ -114,11 +114,19 @@ Cloud processing on the project's Modal storage is judged allowed for both by th
 
 ## Environment and patches
 
-Not yet built. Planned: the study base image (NGC 26.04, Python 3.12), `pyproject.toml` dependencies with pytorchvideo pinned to a git commit.
+Image: the study base (`nvcr.io/nvidia/pytorch:26.04-py3`, Python 3.12, its torch and torchvision kept), plus `pyproject.toml`'s runtime dependencies at their stated minimums, pytorchvideo from git at `f3142bb05cdb56af0704ab6f0adfb0c7bbafe4a0`, and **`av==12.3.0`**. Upstream leaves `av` unpinned; with the current PyAV 18.1.0, pytorchvideo's `get_clip` is SIGKILLed on some ASL Citizen videos (e.g. `42667478960180394-SIGN LANGUAGE.mp4`, decoded fine by PyAV itself), while 12.3.0 decodes them. The code is the pinned tarball (SHA-256 `c271bb7d…`) with these patches, applied in order; `pip freeze` is written to `/code/pip-freeze.txt` in the image.
 
-| Patch | SHA-256 | Concern |
-| --- | --- | --- |
-| `patches/01-train-vocabulary.patch` | `bdda1b0dfa992e2b7e7cfe5f8941d56ca654a1f222f40228e1847c0e41a8f404` | Use train's top-N glosses for every split (gate `aslc-vocabulary`) |
+| Patch | SHA-256 | Concern | Changes behaviour? |
+| --- | --- | --- | --- |
+| `01-train-vocabulary.patch` | `bdda1b0d…` | Train's top-N glosses for every split (gate `aslc-vocabulary`) | Yes; matches the paper's split sizes |
+| `02-single-gpu.patch` | `aeca0e23…` | `cuda:1` → `cuda` | No |
+| `03-resume.patch` | `7b9df53e…` | Save and restore model, optimizer, scheduler, early-stopping and RNG state after every epoch, so runs survive Modal's 24 h limit | No (tested: 1 epoch, then resumed into epoch 2) |
+| `04-direct-decode.patch` | `974929fc…` | Decode extractor clips with PyAV directly instead of through pytorchvideo's per-frame overhead | No: bit-identical on 1,000 augmented and 1,000 raw clips after the full transform |
+| `05-direct-decode-combined.patch` | `521185e4…` | The same for the combined trainer's `get_clip(0, video.duration)` | No: bit-identical on 1,000 augmented clips |
+
+**Speed-only settings**, recorded as deviations from §IV.E's "4 worker threads": `num_workers` 32 for the extractor and combined trainers; clips staged from the Volume to container-local disk before each training and test segment; verify and augmentation sharded over CPU containers (32 gloss shards, 96 row chunks) and merged in upstream row order. fp32 is kept, as on the authors' A6000.
+
+**Throughput** (one H100, fp32/TF32, 64-frame 256×256 clips, batch 3): the GPU alone sustains 24 clips/s. Data loading as published reaches ~11 clips/s; patch 04 and staging bring full-data training to ~18 clips/s, i.e. ~2.1 h per epoch including validation. Measured, not adopted: B200 (32 clips/s GPU-only, still loader-bound), decord (15× faster but 4 of 300 clips decode to different pixels), single-threaded FFmpeg and jemalloc (no gain).
 
 ## Execution evidence
 
@@ -130,7 +138,10 @@ None yet.
 
 ## Attempts, failures, and dead ends
 
-None yet.
+- **Augmentation under PyAV 18.1.0** (apps `ap-W945dC2flHl3uTNKwK7zC1`, `ap-4zy2F1SucPRQW7xmRdGVIP`, `ap-OZ43OaFmdG3oLHXZFeBtTu`): 15 of 96 shards were SIGKILLed on every attempt, each on a specific video; one failing shard also cancelled the rest. Traced to pytorchvideo with PyAV 18 (`ap-YL9UvN2GpbKvHd75CGhLkj`); with `av==12.3.0` all 96 shards succeeded. All outputs of these attempts were deleted and preprocessing was redone in one environment.
+- **First standalone launch** (`ap-tmUJmgGwlBuqWGcgT5ay7h`): stopped by the agent after 6 minutes, before any epoch finished, because reading clips from the Volume held training at ~16 clips/s; relaunched with local staging.
+- **Throughput diagnostics** behind the table above: `ap-45Zy6iMri6EmMzBx5gyFMD` (worker sweep), `ap-ExM1uI8z3hecSjTTL84kMq` (GPU vs loader), `ap-gQtpkzaDKUiMOA9Q8eZ9yH` (Volume vs local), `ap-ita3jnvERisFrzIxJnLjKU` (decode identity, retained as run `decode-identity-aslc1500`).
+- **I3D baseline (Table I row 1):** no script, config or commit in any of the code repository's 8 branches trains a plain I3D; the paper does not describe its training.
 
 ## Candidate flags, ethics, and human evaluation
 
