@@ -141,7 +141,7 @@ None yet.
 - **Augmentation under PyAV 18.1.0** (apps `ap-W945dC2flHl3uTNKwK7zC1`, `ap-4zy2F1SucPRQW7xmRdGVIP`, `ap-OZ43OaFmdG3oLHXZFeBtTu`): 15 of 96 shards were SIGKILLed on every attempt, each on a specific video; one failing shard also cancelled the rest. Traced to pytorchvideo with PyAV 18 (`ap-YL9UvN2GpbKvHd75CGhLkj`); with `av==12.3.0` all 96 shards succeeded. All outputs of these attempts were deleted and preprocessing was redone in one environment.
 - **First standalone launch** (`ap-tmUJmgGwlBuqWGcgT5ay7h`): stopped by the agent after 6 minutes, before any epoch finished, because reading clips from the Volume held training at ~16 clips/s; relaunched with local staging.
 - **Throughput diagnostics** behind the table above: `ap-45Zy6iMri6EmMzBx5gyFMD` (worker sweep), `ap-ExM1uI8z3hecSjTTL84kMq` (GPU vs loader), `ap-gQtpkzaDKUiMOA9Q8eZ9yH` (Volume vs local), `ap-ita3jnvERisFrzIxJnLjKU` (decode identity, retained as run `decode-identity-aslc1500`).
-- **I3D baseline (Table I row 1):** no script, config or commit in any of the code repository's 8 branches trains a plain I3D; the paper does not describe its training.
+- **I3D baseline (Table I row 1): not reproducible from the paper.** The row cites [6], but [6] reports I3D only on all 2,731 glosses (63.10%) and on its WLASL-overlap subset (74.16%); 71.10 / 90.13 / 0.70 appears nowhere in it. §V.A and §V.C call it "the baseline I3D model" without a protocol, and no script, config or commit in any of the code repository's 8 branches trains one. Not run (gate `table1-i3d-baseline`).
 
 ## Candidate flags, ethics, and human evaluation
 

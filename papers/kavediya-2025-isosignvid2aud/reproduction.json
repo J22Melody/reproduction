@@ -501,7 +501,23 @@
       "metric_id": "top1",
       "original_value": 71.1,
       "copied_baseline": false,
-      "copied_baseline_note": "Cited to [6], but [6] (arXiv:2304.05934) reports I3D at 63.10% on the full 2731-class set and 74.16% on its WLASL-overlap subset; 71.10 / 90.13 / 0.70 appears nowhere in it. Treated as the authors' own run on their 1500-gloss subset, so in scope."
+      "copied_baseline_note": "Cited to [6], but [6] (arXiv:2304.05934) reports I3D at 63.10% on the full 2731-class set and 74.16% on its WLASL-overlap subset; 71.10 / 90.13 / 0.70 appears nowhere in it. Treated as the authors' own run on their 1500-gloss subset, so in scope.",
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "protocol_ambiguous",
+          "detail": "Unsourced baseline: [6] does not contain this value and the paper gives no training protocol (gate table1-i3d-baseline)."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [
+          "table1-i3d-baseline"
+        ],
+        "evidence": [
+          "ASL Citizen [6] reports I3D 63.10% (2,731 glosses) and 74.16% (WLASL-overlap subset) only.",
+          "No baseline protocol in the paper or code history."
+        ]
+      }
     },
     {
       "target_id": "t1-i3d-top5",
@@ -513,7 +529,23 @@
       "metric_id": "top5",
       "original_value": 90.13,
       "copied_baseline": false,
-      "copied_baseline_note": "Cited to [6], but [6] (arXiv:2304.05934) reports I3D at 63.10% on the full 2731-class set and 74.16% on its WLASL-overlap subset; 71.10 / 90.13 / 0.70 appears nowhere in it. Treated as the authors' own run on their 1500-gloss subset, so in scope."
+      "copied_baseline_note": "Cited to [6], but [6] (arXiv:2304.05934) reports I3D at 63.10% on the full 2731-class set and 74.16% on its WLASL-overlap subset; 71.10 / 90.13 / 0.70 appears nowhere in it. Treated as the authors' own run on their 1500-gloss subset, so in scope.",
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "protocol_ambiguous",
+          "detail": "Unsourced baseline: [6] does not contain this value and the paper gives no training protocol (gate table1-i3d-baseline)."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [
+          "table1-i3d-baseline"
+        ],
+        "evidence": [
+          "ASL Citizen [6] reports I3D 63.10% (2,731 glosses) and 74.16% (WLASL-overlap subset) only.",
+          "No baseline protocol in the paper or code history."
+        ]
+      }
     },
     {
       "target_id": "t1-i3d-f1",
@@ -525,7 +557,23 @@
       "metric_id": "f1",
       "original_value": 0.7,
       "copied_baseline": false,
-      "copied_baseline_note": "Cited to [6], but [6] (arXiv:2304.05934) reports I3D at 63.10% on the full 2731-class set and 74.16% on its WLASL-overlap subset; 71.10 / 90.13 / 0.70 appears nowhere in it. Treated as the authors' own run on their 1500-gloss subset, so in scope."
+      "copied_baseline_note": "Cited to [6], but [6] (arXiv:2304.05934) reports I3D at 63.10% on the full 2731-class set and 74.16% on its WLASL-overlap subset; 71.10 / 90.13 / 0.70 appears nowhere in it. Treated as the authors' own run on their 1500-gloss subset, so in scope.",
+      "result": {
+        "status": "not_produced",
+        "reason": {
+          "code": "protocol_ambiguous",
+          "detail": "Unsourced baseline: [6] does not contain this value and the paper gives no training protocol (gate table1-i3d-baseline)."
+        },
+        "run_ids": [],
+        "artifact_ids": [],
+        "gate_ids": [
+          "table1-i3d-baseline"
+        ],
+        "evidence": [
+          "ASL Citizen [6] reports I3D 63.10% (2,731 glosses) and 74.16% (WLASL-overlap subset) only.",
+          "No baseline protocol in the paper or code history."
+        ]
+      }
     },
     {
       "target_id": "t1-iso-top1",
@@ -1430,6 +1478,33 @@
           "description": "Train's top-N for all splits.",
           "paper_evidence": "Reproduces the train count exactly; val and test reachable by tie-break.",
           "decision_needed": "Accept a behaviour-changing patch."
+        }
+      ]
+    },
+    {
+      "gate_id": "table1-i3d-baseline",
+      "type": "protocol",
+      "status": "open",
+      "reason": "Table I's 'I3D [6]' row (71.10 / 90.13 / 0.70) has no stated source or protocol. [6] (ASL Citizen, arXiv:2304.05934) reports I3D at 63.10% Top-1 on all 2,731 glosses and 74.16% on its WLASL-overlap subset, never on a 1,500-gloss subset, and these values appear nowhere in it. The paper does not describe how its baseline was trained, and no script, config or commit in any of the code repository's 8 branches trains a plain I3D.",
+      "evidence": [
+        "Table I: 'I3D [6] 71.10 90.13 0.70'; caption cites ASL-Citizen-1500 [6].",
+        "§V.A: 'a slight improvement upon the baseline I3D model by 0.91% and 1.29%' and '4.09% … over the baseline I3D model' — consistent with the table, no protocol.",
+        "§V.C: 'the standalone base classifier (I3D) within our framework' — refers to the authors' own extractor.",
+        "Kugelblitz25/IsoSignVid2Aud history, all branches, searched 2026-10-02: no baseline training code."
+      ],
+      "required_action": "Needs the authors' baseline source or training protocol. Until then the three I3D targets are not produced and not run (assignee decision, 2026-10-02).",
+      "alternatives": [
+        {
+          "alternative_id": "not-run",
+          "description": "Mark the three targets not produced.",
+          "paper_evidence": "No protocol or source.",
+          "decision_needed": "Accept the targets as not reproducible from the paper."
+        },
+        {
+          "alternative_id": "guessed-baseline",
+          "description": "Train pytorchvideo i3d_r50 with a plain linear head under the extractor's recipe.",
+          "paper_evidence": "None; the recipe would be ours.",
+          "decision_needed": "Would be conditional evidence only, never a produced target."
         }
       ]
     }
