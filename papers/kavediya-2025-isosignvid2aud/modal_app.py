@@ -256,20 +256,29 @@ def _write_train_config(run: Path, overrides: dict) -> None:
 
 SEGMENT_SECONDS = 23 * 3600  # Modal's 24 h function limit, less a margin
 STAGE = Path("/stage/videos")  # container-local copy of the clips (speed only; README)
+# Assignee's limit (2026-10-02): both Table I rows finish, tests included, by end of Monday Zurich time.
+DEADLINE_UTC = "2026-10-05T22:00:00Z"
+TEST_RESERVE_SECONDS = 3 * 3600
 
 
-def _stage(splits: tuple[str, ...]) -> dict:
-    """Copy the augmented clips of the given splits from the Volume to local disk (64 threads)."""
+def _deadline_ts() -> float:
+    import datetime as dt
+
+    return dt.datetime.fromisoformat(DEADLINE_UTC.replace("Z", "+00:00")).timestamp()
+
+
+def _stage(splits: tuple[str, ...], csv_prefix: str = "", source: Path = RUN / "processed/videos") -> dict:
+    """Copy the clips of the given splits from a Volume to local disk (64 threads)."""
     import shutil
     from concurrent.futures import ThreadPoolExecutor
 
     import pandas as pd
 
     STAGE.mkdir(parents=True, exist_ok=True)
-    files = sorted({f for s in splits for f in pd.read_csv(RUN / f"processed/{s}.csv")["Video file"]})
+    files = sorted({f for s in splits for f in pd.read_csv(RUN / f"processed/{csv_prefix}{s}.csv")["Video file"]})
     start = time.time()
     with ThreadPoolExecutor(64) as ex:
-        list(ex.map(lambda f: (STAGE / f).exists() or shutil.copyfile(RUN / "processed/videos" / f, STAGE / f), files))
+        list(ex.map(lambda f: (STAGE / f).exists() or shutil.copyfile(source / f, STAGE / f), files))
     return {"staged_files": len(files), "stage_seconds": round(time.time() - start, 1)}
 
 
@@ -279,6 +288,8 @@ def _train_segment(run: Path, script: str, resume: Path, log: Path) -> dict:
     import shutil
 
     start = time.time()
+    # Stop at an epoch boundary before Modal's limit, or early enough to test before the deadline.
+    budget = min(SEGMENT_SECONDS, _deadline_ts() - TEST_RESERVE_SECONDS - start)
     smi = shutil.which("nvidia-smi") and subprocess.Popen(
         ["nvidia-smi", "--query-gpu=memory.used", "--format=csv,noheader,nounits", "-lms", "5000"],
         stdout=subprocess.PIPE, text=True,
@@ -294,7 +305,7 @@ def _train_segment(run: Path, script: str, resume: Path, log: Path) -> dict:
             epoch_ends.append(time.time())
             results.commit()
             span = epoch_ends[-1] - (epoch_ends[-2] if len(epoch_ends) > 1 else start)
-            if time.time() - start + 1.15 * span > SEGMENT_SECONDS:
+            if time.time() - start + 1.15 * span > budget:
                 mark = epoch_ends[-1]
                 while proc.poll() is None and (not resume.exists() or resume.stat().st_mtime < mark - 60):
                     time.sleep(10)
@@ -308,6 +319,7 @@ def _train_segment(run: Path, script: str, resume: Path, log: Path) -> dict:
         peak = max((int(x) for x in smi.stdout.read().split()), default=0)
     results.commit()
     return {"script": script, "exit_code": proc.returncode, "stopped_for_next_segment": stopped,
+            "stop_reason": None if not stopped else ("deadline" if budget < SEGMENT_SECONDS else "segment_limit"),
             "seconds": round(time.time() - start, 1), "epochs_this_segment": len(epoch_ends),
             "peak_gpu_memory_mib": peak}
 
@@ -374,21 +386,36 @@ def train_combined(name: str, segment: int = 1, overrides: dict | None = None) -
 
 
 @app.function(image=image, gpu="H100", cpu=64, memory=262144, volumes=VOLUMES, env=ENV, ephemeral_disk=600 * 1024, timeout=12 * 3600)
-def test_extractor(name: str, weights: str = "checkpoints/extractor/full_best_i3d.pt") -> dict:
-    """models/extractor/test.py on the best (lowest validation loss) checkpoint."""
+def test_extractor(name: str, weights: str = "checkpoints/extractor/full_best_i3d.pt", original: bool = False) -> dict:
+    """models/extractor/test.py on the best (lowest validation loss) checkpoint.
+    original=True is the agreed diagnostic on the unaugmented test videos (gate test-set-augmentation)."""
     import yaml
 
     run = RUN / name
-    staged = _stage(("test",))
+    if original:
+        staged = _stage(("test",), "verified_", ASLC / "videos")
+    else:
+        staged = _stage(("test",))
     cfg = yaml.safe_load((run / "config.yaml").read_text())
     cfg["data"]["processed"]["videos"] = str(STAGE)
-    (run / "config.yaml").write_text(yaml.safe_dump(cfg, sort_keys=False))
-    record = _step(run, "models/extractor/test.py", "--model_weights", str(run / weights),
-                   "--output_path", str(run / "test_results"))
-    record.update(staged)
+    if original:
+        cfg["data"]["processed"]["csvs"]["test"] = str(RUN / "processed/verified_test.csv")
+    config = run / ("config_test_original.yaml" if original else "config_test.yaml")
+    config.write_text(yaml.safe_dump(cfg, sort_keys=False))
+    out = run / ("test_results_original" if original else "test_results")
+    start = time.time()
+    proc = subprocess.run(["python", "/code/models/extractor/test.py", "--config_file", str(config),
+                           "--model_weights", str(run / weights), "--output_path", str(out)], cwd=run)
+    results.commit()
+    if proc.returncode:
+        raise RuntimeError(f"test.py exited {proc.returncode}")
+    record = {"script": "models/extractor/test.py", "original": original, "exit_code": proc.returncode,
+              "seconds": round(time.time() - start, 1), **staged}
     import pandas as pd
 
-    record["summary"] = pd.read_csv(run / "test_results/test_results_summary.csv").to_dict("records")
+    record["summary"] = pd.read_csv(out / "test_results_summary.csv").to_dict("records")
+    (out / "record.json").write_text(json.dumps(record, indent=2))
+    results.commit()
     return record
 
 
@@ -500,3 +527,86 @@ def file_sha256(path: str) -> dict:
 @app.local_entrypoint()
 def sha256(path: str) -> None:
     print(json.dumps(file_sha256.remote(path)))
+
+
+ROWS = {"standalone": ("checkpoints/extractor/full_best_i3d.pt", "logs/extractor_training.log"),
+        "combined": ("checkpoints/combined/extractor_best.pt", "logs/combined_training.log")}
+MAX_SEGMENTS = 4
+EPOCH_SECONDS = 2.2 * 3600
+
+
+def _call_state(call_id: str) -> str:
+    """'running', 'done' or 'failed' for a spawned function call."""
+    try:
+        modal.FunctionCall.from_id(call_id).get(timeout=0)
+        return "done"
+    except modal.exception.FunctionTimeoutError:  # the call itself hit its timeout
+        return "failed"
+    except (TimeoutError, modal.exception.TimeoutError):  # still running
+        return "running"
+    except Exception:
+        return "failed"
+
+
+def _advance(row: str) -> dict:
+    """One idempotent step of a Table I row: resume training, then run both tests."""
+    run = RUN / row
+    state_path = run / "orchestration.json"
+    # Segment 1 was launched from a local client; it carries no call id.
+    state = json.loads(state_path.read_text()) if state_path.exists() else {
+        "segments": [{"segment": 1, "call_id": None}], "tests": {}, "done": False}
+    if state["done"]:
+        return state
+    records = [json.loads(l) for l in (run / "segments.jsonl").read_text().splitlines()] if (run / "segments.jsonl").exists() else []
+    current = state["segments"][-1]
+    finished = any(r["segment"] == current["segment"] for r in records)
+    now = time.time()
+    if not finished:
+        if current["call_id"]:
+            running = _call_state(current["call_id"]) == "running"
+        else:  # untracked first segment: alive while its log keeps being written
+            log = run / ROWS[row][1]
+            running = log.exists() and now - log.stat().st_mtime < 4 * 3600
+        if running:
+            return state
+        retries = sum(1 for s in state["segments"] if s["segment"] == current["segment"])
+        if retries > 2:
+            state["done"], state["note"] = True, f"segment {current['segment']} failed 3 times"
+        else:  # resume.pt makes a rerun of the same segment continue from the last finished epoch
+            call = (train_extractor if row == "standalone" else train_combined).spawn(row, current["segment"])
+            state["segments"].append({"segment": current["segment"], "call_id": call.object_id, "retry": True})
+    else:
+        last = [r for r in records if r["segment"] == current["segment"]][-1]
+        more = last["stopped_for_next_segment"] and last.get("stop_reason") != "deadline"
+        fits = now + EPOCH_SECONDS + TEST_RESERVE_SECONDS < _deadline_ts()
+        if more and fits and current["segment"] < MAX_SEGMENTS:
+            call = (train_extractor if row == "standalone" else train_combined).spawn(row, current["segment"] + 1)
+            state["segments"].append({"segment": current["segment"] + 1, "call_id": call.object_id})
+        else:
+            state["training_end"] = "early_stopped" if not last["stopped_for_next_segment"] else "truncated"
+            for original in (False, True):
+                key = "original" if original else "paper"
+                test = state["tests"].get(key)
+                if test is None or (test["state"] == "failed" and test.get("tries", 1) < 3):
+                    call = test_extractor.spawn(row, ROWS[row][0], original)
+                    state["tests"][key] = {"call_id": call.object_id, "state": "running",
+                                           "tries": (test or {}).get("tries", 0) + 1}
+                elif test["state"] == "running":
+                    test["state"] = _call_state(test["call_id"])
+            state["done"] = len(state["tests"]) == 2 and all(
+                t["state"] == "done" or (t["state"] == "failed" and t["tries"] >= 3) for t in state["tests"].values())
+    state["updated_at"] = now
+    state_path.write_text(json.dumps(state, indent=2))
+    results.commit()
+    return state
+
+
+@app.function(image=image, cpu=1, memory=2048, volumes=VOLUMES, env=ENV, timeout=600,
+              schedule=modal.Period(minutes=15))
+def tick() -> dict:
+    """Scheduled orchestrator (deployed app): advances both Table I rows until they are done."""
+    results.reload()
+    out = {row: _advance(row) for row in ROWS}
+    print(json.dumps({row: {k: s.get(k) for k in ("done", "training_end")} | {"segments": len(s["segments"])}
+                      for row, s in out.items()}), flush=True)
+    return out

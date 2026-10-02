@@ -130,7 +130,7 @@ Image: the study base (`nvcr.io/nvidia/pytorch:26.04-py3`, Python 3.12, its torc
 
 ## Execution evidence
 
-No runs.
+Preprocessing runs are in `reproduction.json.runs`. **Table I training is in progress** (2026-10-02): IsoSignVid2Aud (`ap-eOtcEN62pVwmlj2320NVtt`) and combined training (`ap-YYlXIdwPctaYce3quuWMxl`) each on one H100, ~2.1 h per epoch; after epoch 2, validation accuracy on the augmented copies is 70.1% and 70.3%. Training runs in ≤23 h resumable segments; the deployed app's scheduled `tick` (every 15 min) starts each next segment and then both tests (paper protocol on augmented test copies; diagnostic on the original test videos). Assignee-set limits: at most 4 segments per row, hard deadline 2026-10-05 22:00 UTC (training stops at an epoch boundary early enough to test before it), $1,000 for Table I. Run entries are added when the segments finish.
 
 ## Guesses and deviations
 
