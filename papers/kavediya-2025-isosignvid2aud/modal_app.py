@@ -531,7 +531,7 @@ def sha256(path: str) -> None:
 
 ROWS = {"standalone": ("checkpoints/extractor/full_best_i3d.pt", "logs/extractor_training.log"),
         "combined": ("checkpoints/combined/extractor_best.pt", "logs/combined_training.log")}
-MAX_SEGMENTS = 4
+MAX_SEGMENTS = 5  # segment 1 was cut short by an agent error (README); the deadline is the binding limit
 EPOCH_SECONDS = 2.2 * 3600
 
 
